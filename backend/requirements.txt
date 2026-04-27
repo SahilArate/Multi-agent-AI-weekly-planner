@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-dotenv
+pydantic
+langchain
+langchain-openai
+langgraph
+openai
+supabase
+redis
+loguru
+websockets
+httpx
+pgvector
+psycopg2-binary
+python-multipart
