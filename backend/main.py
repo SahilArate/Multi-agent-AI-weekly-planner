@@ -1,7 +1,5 @@
 import sys
 import os
-
-# This MUST be first — before any other imports
 os.environ["PYTHONPATH"] = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -12,7 +10,7 @@ from loguru import logger
 import uvicorn
 
 load_dotenv()
-
+print("GROQ KEY LOADED:", os.getenv("GROQ_API_KEY"))
 app = FastAPI(
     title="AI Weekly Planner",
     description="Multi-agent weekly planning system",
