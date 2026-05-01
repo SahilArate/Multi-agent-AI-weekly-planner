@@ -10,11 +10,14 @@ from agents.calendar_agent import run_calendar_agent
 from agents.energy_agent import run_energy_agent
 from agents.balance_agent import run_balance_agent
 from agents.planner_agent import run_planner_agent
+from utils.supabase_client import supabase
+from datetime import date
+from typing import List
 import json
 
 router = APIRouter(prefix="/api", tags=["planning"])
 
-# ── REST Models ─────────────────────────────────────
+# ── Models ───────────────────────────────────────────
 class PlanRequest(BaseModel):
     goals: str
 
@@ -23,7 +26,16 @@ class FullPlanRequest(BaseModel):
     commitments: str = "No existing commitments"
     preferences: str = "I am a morning person, most productive before noon"
 
-# ── Existing REST endpoint ───────────────────────────
+class SavePlanRequest(BaseModel):
+    user_id: str
+    goals: str
+    commitments: str
+    preferences: str
+    events: List[dict]
+    week_summary: str
+    total_hours: float
+
+# ── Goal parse endpoint ──────────────────────────────
 @router.post("/goals/parse")
 async def parse_goals(request: PlanRequest):
     try:
@@ -34,13 +46,11 @@ async def parse_goals(request: PlanRequest):
         logger.error(f"Goal Agent failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# ── REST plan endpoint ───────────────────────────────
+# ── Full plan REST endpoint ──────────────────────────
 @router.post("/plan/generate")
 async def generate_plan(request: FullPlanRequest):
     try:
         logger.info("Starting full multi-agent planning...")
-
-        # Run agents one by one
         goals_result = await run_goal_agent(request.goals)
         calendar_result = await run_calendar_agent(request.commitments)
         energy_result = await run_energy_agent(request.preferences)
@@ -54,32 +64,59 @@ async def generate_plan(request: FullPlanRequest):
             energy_result.model_dump_json(),
             balance_result.model_dump_json()
         )
-
         return {
             "status": "success",
             "plan": final_result.model_dump(),
             "agents_used": [
-                "Goal Agent",
-                "Calendar Agent",
-                "Energy Agent",
-                "Balance Agent",
-                "Planner Agent"
+                "Goal Agent", "Calendar Agent",
+                "Energy Agent", "Balance Agent", "Planner Agent"
             ]
         }
-
     except Exception as e:
         logger.error(f"Planning failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ── Save plan endpoint ───────────────────────────────
+@router.post("/plan/save")
+async def save_plan(request: SavePlanRequest):
+    try:
+        data = supabase.table("plans").insert({
+            "user_id": request.user_id,
+            "goals": request.goals,
+            "commitments": request.commitments,
+            "preferences": request.preferences,
+            "week_start": str(date.today()),
+            "events": request.events,
+            "week_summary": request.week_summary,
+            "total_hours": request.total_hours
+        }).execute()
+        logger.success(f"Plan saved for user: {request.user_id}")
+        return {"status": "success", "plan_id": data.data[0]["id"]}
+    except Exception as e:
+        logger.error(f"Save plan failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ── Get plans endpoint ───────────────────────────────
+@router.get("/plans/{user_id}")
+async def get_plans(user_id: str):
+    try:
+        data = supabase.table("plans")\
+            .select("*")\
+            .eq("user_id", user_id)\
+            .order("created_at", desc=True)\
+            .execute()
+        return {"status": "success", "plans": data.data}
+    except Exception as e:
+        logger.error(f"Get plans failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ── WebSocket endpoint ───────────────────────────────
-# This streams each agent's progress live to the frontend
 @router.websocket("/ws/plan")
 async def websocket_plan(websocket: WebSocket):
     await websocket.accept()
     logger.info("WebSocket connection opened")
 
     try:
-        # Step 1 — receive user input from frontend
         data = await websocket.receive_text()
         request = json.loads(data)
 
@@ -87,86 +124,44 @@ async def websocket_plan(websocket: WebSocket):
         commitments = request.get("commitments", "No existing commitments")
         preferences = request.get("preferences", "I am a morning person")
 
-        # Helper function — sends status message to frontend
         async def send_update(agent: str, status: str, message: str, data=None):
             payload = {
                 "agent": agent,
-                "status": status,  # "thinking" | "done" | "error"
+                "status": status,
                 "message": message,
                 "data": data
             }
             await websocket.send_text(json.dumps(payload))
             logger.info(f"WS sent: {agent} — {status}")
 
-        # ── Agent 1: Goal Agent ──────────────────────
-        await send_update(
-            "Goal Agent", "thinking",
-            "Reading your goals and breaking them down..."
-        )
+        await send_update("Goal Agent", "thinking", "Reading your goals and breaking them down...")
         goals_result = await run_goal_agent(goals)
-        await send_update(
-            "Goal Agent", "done",
-            f"Found {len(goals_result.goals)} goals — {goals_result.summary}",
-            goals_result.model_dump()
-        )
+        await send_update("Goal Agent", "done", f"Found {len(goals_result.goals)} goals — {goals_result.summary}", goals_result.model_dump())
 
-        # ── Agent 2: Calendar Agent ──────────────────
-        await send_update(
-            "Calendar Agent", "thinking",
-            "Checking your schedule and finding free slots..."
-        )
+        await send_update("Calendar Agent", "thinking", "Checking your schedule and finding free slots...")
         calendar_result = await run_calendar_agent(commitments)
-        await send_update(
-            "Calendar Agent", "done",
-            f"{calendar_result.summary}",
-            calendar_result.model_dump()
-        )
+        await send_update("Calendar Agent", "done", f"{calendar_result.summary}", calendar_result.model_dump())
 
-        # ── Agent 3: Energy Agent ────────────────────
-        await send_update(
-            "Energy Agent", "thinking",
-            "Analyzing your energy patterns..."
-        )
+        await send_update("Energy Agent", "thinking", "Analyzing your energy patterns...")
         energy_result = await run_energy_agent(preferences)
-        await send_update(
-            "Energy Agent", "done",
-            f"{energy_result.summary}",
-            energy_result.model_dump()
-        )
+        await send_update("Energy Agent", "done", f"{energy_result.summary}", energy_result.model_dump())
 
-        # ── Agent 4: Balance Agent ───────────────────
-        await send_update(
-            "Balance Agent", "thinking",
-            "Making sure your week is balanced..."
-        )
+        await send_update("Balance Agent", "thinking", "Making sure your week is balanced...")
         balance_result = await run_balance_agent(
             goals_result.model_dump_json(),
             calendar_result.model_dump_json()
         )
-        await send_update(
-            "Balance Agent", "done",
-            f"{balance_result.summary}",
-            balance_result.model_dump()
-        )
+        await send_update("Balance Agent", "done", f"{balance_result.summary}", balance_result.model_dump())
 
-        # ── Agent 5: Planner Agent ───────────────────
-        await send_update(
-            "Planner Agent", "thinking",
-            "Creating your final weekly schedule..."
-        )
+        await send_update("Planner Agent", "thinking", "Creating your final weekly schedule...")
         final_result = await run_planner_agent(
             goals_result.model_dump_json(),
             calendar_result.model_dump_json(),
             energy_result.model_dump_json(),
             balance_result.model_dump_json()
         )
-        await send_update(
-            "Planner Agent", "done",
-            f"Done! Scheduled {len(final_result.events)} events for your week.",
-            final_result.model_dump()
-        )
+        await send_update("Planner Agent", "done", f"Done! Scheduled {len(final_result.events)} events for your week.", final_result.model_dump())
 
-        # ── Final: send complete plan ────────────────
         await websocket.send_text(json.dumps({
             "agent": "system",
             "status": "complete",

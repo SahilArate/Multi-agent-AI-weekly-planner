@@ -26,8 +26,9 @@ app.add_middleware(
 )
 
 from api.plan import router as plan_router
+from api.auth import router as auth_router
 app.include_router(plan_router)
-
+app.include_router(auth_router)
 @app.get("/")
 async def root():
     return {"status": "AI Planner backend is running"}
