@@ -7,13 +7,10 @@ interface User {
 }
 
 interface AppStore {
-  // Auth
   user: User | null
   token: string | null
   setUser: (user: User | null, token: string | null) => void
   logout: () => void
-
-  // Plan
   events: PlanEvent[]
   weekSummary: string
   totalHours: number
@@ -21,26 +18,41 @@ interface AppStore {
   clearPlan: () => void
 }
 
+// Restore user from localStorage on app load
+const getSavedUser = (): User | null => {
+  if (typeof window === 'undefined') return null
+  try {
+    const saved = localStorage.getItem('user')
+    return saved ? JSON.parse(saved) : null
+  } catch { return null }
+}
+
+const getSavedToken = (): string | null => {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('token')
+}
+
 export const useStore = create<AppStore>((set) => ({
-  // Auth
-  user: null,
-  token: null,
+  user: getSavedUser(),
+  token: getSavedToken(),
   setUser: (user, token) => {
     set({ user, token })
-    if (token) localStorage.setItem('token', token)
-    if (user) localStorage.setItem('user', JSON.stringify(user))
+    if (typeof window !== 'undefined') {
+      if (token) localStorage.setItem('token', token)
+      if (user) localStorage.setItem('user', JSON.stringify(user))
+    }
   },
   logout: () => {
     set({ user: null, token: null })
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
   },
-
-  // Plan
   events: [],
   weekSummary: '',
   totalHours: 0,
   setplan: (events, weekSummary, totalHours) =>
     set({ events, weekSummary, totalHours }),
-  clearPlan: () => set({ events: [], weekSummary: '', totalHours: 0 })
+  clearPlan: () => set({ events: [], weekSummary: '', totalHours: 0 }),
 }))

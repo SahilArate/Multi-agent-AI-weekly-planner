@@ -9,6 +9,7 @@ import { createPlanWebSocket, PlanEvent, AgentMessage, savePlan } from '@/lib/ap
 type Stage = 'input' | 'planning' | 'done'
 
 export default function PlanPage() {
+  const router = useRouter()
   const [stage, setStage] = useState<Stage>('input')
   const [goals, setGoals] = useState('')
   const [commitments, setCommitments] = useState('')
@@ -56,6 +57,33 @@ export default function PlanPage() {
     wsRef.current?.close()
   }
 
+  const handleSave = async () => {
+    const savedUser = localStorage.getItem('user')
+    if (!savedUser) {
+      router.push('/login')
+      return
+    }
+    const u = JSON.parse(savedUser)
+    if (!u?.id) {
+      router.push('/login')
+      return
+    }
+    try {
+      await savePlan({
+        user_id: u.id,
+        goals,
+        commitments,
+        preferences,
+        events,
+        week_summary: summary,
+        total_hours: totalHours,
+      })
+      router.push('/dashboard')
+    } catch (e: any) {
+      setError('Failed to save. ' + (e?.response?.data?.detail || 'Please login first.'))
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <Navbar />
@@ -66,7 +94,6 @@ export default function PlanPage() {
         padding: '40px 24px',
       }}>
 
-        {/* Page header */}
         <div style={{ marginBottom: '32px' }}>
           <h1 style={{
             fontSize: '24px',
@@ -80,7 +107,6 @@ export default function PlanPage() {
           </p>
         </div>
 
-        {/* ERROR */}
         {error && (
           <div style={{
             background: '#1c0a0a',
@@ -99,7 +125,6 @@ export default function PlanPage() {
             gridTemplateColumns: '1fr 1fr',
             gap: '24px',
           }}>
-            {/* Input form */}
             <div style={{
               background: '#111111',
               border: '1px solid #1a1a1a',
@@ -113,7 +138,6 @@ export default function PlanPage() {
                 marginBottom: '20px',
               }}>Your goals</h2>
 
-              {/* Goals */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   fontSize: '12px',
@@ -146,7 +170,6 @@ export default function PlanPage() {
                 />
               </div>
 
-              {/* Commitments */}
               <div style={{ marginBottom: '16px' }}>
                 <label style={{
                   fontSize: '12px',
@@ -176,7 +199,6 @@ export default function PlanPage() {
                 />
               </div>
 
-              {/* Preferences */}
               <div style={{ marginBottom: '24px' }}>
                 <label style={{
                   fontSize: '12px',
@@ -188,7 +210,7 @@ export default function PlanPage() {
                 <textarea
                   value={preferences}
                   onChange={e => setPreferences(e.target.value)}
-                  placeholder="I am a morning person, most productive before noon, tired after lunch..."
+                  placeholder="I am a morning person, most productive before noon..."
                   rows={2}
                   style={{
                     width: '100%',
@@ -220,14 +242,12 @@ export default function PlanPage() {
                   border: 'none',
                   cursor: goals.trim() ? 'pointer' : 'not-allowed',
                   letterSpacing: '-0.2px',
-                  transition: 'background 0.15s',
                 }}
               >
                 Generate my week →
               </button>
             </div>
 
-            {/* Right — tips */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{
                 background: '#111111',
@@ -276,7 +296,6 @@ export default function PlanPage() {
                 ))}
               </div>
 
-              {/* Example goals */}
               <div style={{
                 background: '#111111',
                 border: '1px solid #1a1a1a',
@@ -307,15 +326,6 @@ export default function PlanPage() {
                       fontSize: '12px',
                       color: '#71717a',
                       cursor: 'pointer',
-                      transition: 'border-color 0.15s, color 0.15s',
-                    }}
-                    onMouseEnter={e => {
-                      (e.target as HTMLButtonElement).style.borderColor = '#333'
-                      ;(e.target as HTMLButtonElement).style.color = '#a1a1aa'
-                    }}
-                    onMouseLeave={e => {
-                      (e.target as HTMLButtonElement).style.borderColor = '#1a1a1a'
-                      ;(e.target as HTMLButtonElement).style.color = '#71717a'
                     }}
                   >
                     {ex}
@@ -326,15 +336,12 @@ export default function PlanPage() {
           </div>
         )}
 
-        {/* PLANNING STAGE */}
         {stage === 'planning' && (
           <AgentStream messages={messages} />
         )}
 
-        {/* DONE STAGE */}
         {stage === 'done' && (
           <div>
-            {/* Summary bar */}
             <div style={{
               background: '#111111',
               border: '1px solid #1a1a1a',
@@ -355,47 +362,21 @@ export default function PlanPage() {
                   marginBottom: '2px',
                 }}>{summary}</div>
                 <div style={{ fontSize: '12px', color: '#52525b' }}>
-                  {events.length} events · {totalHours} hours scheduled this week
+                  {events.length} events · {totalHours} hours scheduled
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  onClick={reset}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid #222222',
-                    color: '#a1a1aa',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >← Re-plan</button>
-                <button
-                onClick={async () => {
-                  const savedUser = localStorage.getItem('user')
-                  if (!savedUser) {
-                    router.push('/login')
-                    return
-                  }
-                  const u = JSON.parse(savedUser)
-                  try {
-                    await savePlan({
-                      user_id: u.id,
-                      goals,
-                      commitments,
-                      preferences,
-                      events,
-                      week_summary: summary,
-                      total_hours: totalHours,
-                    })
-                    router.push('/dashboard')
-                  } catch (e) {
-                    setError('Failed to save plan. Please login first.')
-                  }
-                }}
-                style={{
+                <button onClick={reset} style={{
+                  background: 'transparent',
+                  border: '1px solid #222222',
+                  color: '#a1a1aa',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}>← Re-plan</button>
+                <button onClick={handleSave} style={{
                   background: '#3b82f6',
                   border: 'none',
                   color: '#fff',
@@ -404,12 +385,9 @@ export default function PlanPage() {
                   padding: '8px 16px',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                }}
-              >Save plan</button>
-
+                }}>Save plan</button>
               </div>
             </div>
-
             <WeeklyCalendar events={events} />
           </div>
         )}
