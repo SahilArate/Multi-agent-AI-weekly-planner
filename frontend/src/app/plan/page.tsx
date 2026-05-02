@@ -1,9 +1,10 @@
 'use client'
+import { useRouter } from 'next/navigation'
 import { useState, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import AgentStream from '@/components/AgentStream'
 import WeeklyCalendar from '@/components/WeeklyCalendar'
-import { createPlanWebSocket, PlanEvent, AgentMessage } from '@/lib/api'
+import { createPlanWebSocket, PlanEvent, AgentMessage, savePlan } from '@/lib/api'
 
 type Stage = 'input' | 'planning' | 'done'
 
@@ -372,17 +373,40 @@ export default function PlanPage() {
                   }}
                 >← Re-plan</button>
                 <button
-                  style={{
-                    background: '#3b82f6',
-                    border: 'none',
-                    color: '#fff',
-                    fontSize: '13px',
-                    fontWeight: '600',
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >Save plan</button>
+                onClick={async () => {
+                  const savedUser = localStorage.getItem('user')
+                  if (!savedUser) {
+                    router.push('/login')
+                    return
+                  }
+                  const u = JSON.parse(savedUser)
+                  try {
+                    await savePlan({
+                      user_id: u.id,
+                      goals,
+                      commitments,
+                      preferences,
+                      events,
+                      week_summary: summary,
+                      total_hours: totalHours,
+                    })
+                    router.push('/dashboard')
+                  } catch (e) {
+                    setError('Failed to save plan. Please login first.')
+                  }
+                }}
+                style={{
+                  background: '#3b82f6',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                }}
+              >Save plan</button>
+
               </div>
             </div>
 
