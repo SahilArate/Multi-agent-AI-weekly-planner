@@ -63,15 +63,6 @@ export default function Navbar() {
                 color: 'var(--text-secondary)',
                 marginRight: '8px',
               }}>{user.email}</span>
-              <Link href="/dashboard" style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                textDecoration: 'none',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--border)',
-              }}>Dashboard</Link>
               <button onClick={handleLogout} style={{
                 fontSize: '13px',
                 fontWeight: '500',
