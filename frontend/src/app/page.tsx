@@ -1,7 +1,20 @@
+'use client'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 
 export default function Home() {
+  const router = useRouter()
+
+  const handleProtectedRoute = () => {
+    const user = localStorage.getItem('user')
+    if (!user) {
+      router.push('/login')
+    } else {
+      router.push('/plan')
+    }
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <Navbar />
@@ -16,7 +29,6 @@ export default function Home() {
         gap: '80px',
         alignItems: 'center',
       }}>
-        {/* Left */}
         <div>
           <div style={{
             display: 'inline-flex',
@@ -72,18 +84,19 @@ export default function Home() {
           </p>
 
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Link href="/plan" style={{
+            <button onClick={handleProtectedRoute} style={{
               background: '#3b82f6',
               color: '#fff',
               fontSize: '14px',
               fontWeight: '600',
               padding: '11px 24px',
               borderRadius: '8px',
-              textDecoration: 'none',
+              border: 'none',
+              cursor: 'pointer',
               letterSpacing: '-0.2px',
             }}>
               Plan my week →
-            </Link>
+            </button>
             <Link href="/login" style={{
               background: 'transparent',
               color: '#a1a1aa',
@@ -102,7 +115,6 @@ export default function Home() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0',
             marginTop: '40px',
             paddingTop: '40px',
             borderTop: '1px solid #1a1a1a',
@@ -112,11 +124,7 @@ export default function Home() {
               { num: '<15s', label: 'to plan your week' },
               { num: '100%', label: 'free to use' },
             ].map((stat, i) => (
-              <div key={stat.label} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0',
-              }}>
+              <div key={stat.label} style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ paddingRight: '24px' }}>
                   <div style={{
                     fontSize: '20px',
@@ -146,7 +154,6 @@ export default function Home() {
           borderRadius: '16px',
           overflow: 'hidden',
         }}>
-          {/* Card header */}
           <div style={{
             padding: '14px 20px',
             borderBottom: '1px solid #1a1a1a',
@@ -164,7 +171,6 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Agent messages */}
           <div style={{
             padding: '16px 20px',
             display: 'flex',
@@ -172,11 +178,7 @@ export default function Home() {
             gap: '14px',
           }}>
             {previewAgents.map((a, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                gap: '12px',
-                alignItems: 'flex-start',
-              }}>
+              <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                 <div style={{
                   width: '28px', height: '28px',
                   borderRadius: '8px',
@@ -210,7 +212,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Result preview */}
           <div style={{
             margin: '0 20px 20px',
             background: '#0a0a0a',
@@ -278,10 +279,15 @@ export default function Home() {
               letterSpacing: '-0.8px', color: '#fafafa',
             }}>5 agents. 1 perfect week.</h2>
           </div>
-          <Link href="/plan" style={{
-            fontSize: '13px', fontWeight: '500',
-            color: '#3b82f6', textDecoration: 'none',
-          }}>Try it now →</Link>
+          <button onClick={handleProtectedRoute} style={{
+            fontSize: '13px',
+            fontWeight: '500',
+            color: '#3b82f6',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '0',
+          }}>Try it now →</button>
         </div>
 
         <div style={{
@@ -463,17 +469,18 @@ export default function Home() {
             No credit card. No setup.<br />
             Just type your goals and watch agents work.
           </p>
-          <Link href="/plan" style={{
+          <button onClick={handleProtectedRoute} style={{
             background: '#3b82f6',
             color: '#fff',
             fontSize: '14px', fontWeight: '700',
             padding: '12px 32px',
             borderRadius: '8px',
-            textDecoration: 'none',
+            border: 'none',
+            cursor: 'pointer',
             letterSpacing: '-0.2px',
           }}>
             Plan my week for free →
-          </Link>
+          </button>
         </div>
       </section>
 

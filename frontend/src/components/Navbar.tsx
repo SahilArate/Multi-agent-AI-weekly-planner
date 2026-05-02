@@ -93,7 +93,7 @@ export default function Navbar() {
                 padding: '6px 12px',
                 borderRadius: '6px',
               }}>Login</Link>
-              <Link href="/plan" style={{
+              <Link href="/signup" style={{
                 fontSize: '13px',
                 fontWeight: '500',
                 color: '#fff',
