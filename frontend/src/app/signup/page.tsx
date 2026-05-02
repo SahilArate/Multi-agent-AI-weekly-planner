@@ -3,12 +3,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signup } from '@/lib/api'
-import { useStore } from '@/lib/store'
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -64,7 +64,8 @@ export default function SignupPage() {
             lineHeight: '1.6',
             marginBottom: '24px',
           }}>
-            We sent a verification link to <strong style={{ color: '#a1a1aa' }}>{email}</strong>.
+            We sent a verification link to{' '}
+            <strong style={{ color: '#a1a1aa' }}>{email}</strong>.
             Click it to activate your account.
           </p>
           <Link href="/login" style={{
@@ -93,7 +94,6 @@ export default function SignupPage() {
     }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
 
-        {/* Logo */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -118,7 +118,6 @@ export default function SignupPage() {
           }}>WeeklyAI</span>
         </div>
 
-        {/* Card */}
         <div style={{
           background: '#111111',
           border: '1px solid #1a1a1a',
@@ -150,89 +149,81 @@ export default function SignupPage() {
             }}>{error}</div>
           )}
 
-          {/* Full name */}
           <div style={{ marginBottom: '12px' }}>
             <label style={{
-              fontSize: '12px',
-              fontWeight: '500',
-              color: '#a1a1aa',
-              display: 'block',
-              marginBottom: '6px',
+              fontSize: '12px', fontWeight: '500',
+              color: '#a1a1aa', display: 'block', marginBottom: '6px',
             }}>Full name</label>
             <input
               type="text"
               value={fullName}
               onChange={e => setFullName(e.target.value)}
-              placeholder="Sahil Arate"
+              placeholder="Enter your full name"
+              autoComplete="off"
               style={{
-                width: '100%',
-                background: '#0a0a0a',
-                border: '1px solid #222222',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                fontSize: '13px',
-                color: '#fafafa',
-                outline: 'none',
+                width: '100%', background: '#0a0a0a',
+                border: '1px solid #222222', borderRadius: '8px',
+                padding: '10px 12px', fontSize: '13px',
+                color: '#fafafa', outline: 'none',
                 fontFamily: 'DM Sans, sans-serif',
               }}
             />
           </div>
 
-          {/* Email */}
           <div style={{ marginBottom: '12px' }}>
             <label style={{
-              fontSize: '12px',
-              fontWeight: '500',
-              color: '#a1a1aa',
-              display: 'block',
-              marginBottom: '6px',
+              fontSize: '12px', fontWeight: '500',
+              color: '#a1a1aa', display: 'block', marginBottom: '6px',
             }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="sahil@example.com"
+              placeholder="Enter your email"
+              autoComplete="off"
               style={{
-                width: '100%',
-                background: '#0a0a0a',
-                border: '1px solid #222222',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                fontSize: '13px',
-                color: '#fafafa',
-                outline: 'none',
+                width: '100%', background: '#0a0a0a',
+                border: '1px solid #222222', borderRadius: '8px',
+                padding: '10px 12px', fontSize: '13px',
+                color: '#fafafa', outline: 'none',
                 fontFamily: 'DM Sans, sans-serif',
               }}
             />
           </div>
 
-          {/* Password */}
           <div style={{ marginBottom: '24px' }}>
             <label style={{
-              fontSize: '12px',
-              fontWeight: '500',
-              color: '#a1a1aa',
-              display: 'block',
-              marginBottom: '6px',
+              fontSize: '12px', fontWeight: '500',
+              color: '#a1a1aa', display: 'block', marginBottom: '6px',
             }}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Min. 6 characters"
-              onKeyDown={e => e.key === 'Enter' && handleSignup()}
-              style={{
-                width: '100%',
-                background: '#0a0a0a',
-                border: '1px solid #222222',
-                borderRadius: '8px',
-                padding: '10px 12px',
-                fontSize: '13px',
-                color: '#fafafa',
-                outline: 'none',
-                fontFamily: 'DM Sans, sans-serif',
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Min. 6 characters"
+                autoComplete="new-password"
+                onKeyDown={e => e.key === 'Enter' && handleSignup()}
+                style={{
+                  width: '100%', background: '#0a0a0a',
+                  border: '1px solid #222222', borderRadius: '8px',
+                  padding: '10px 40px 10px 12px', fontSize: '13px',
+                  color: '#fafafa', outline: 'none',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute', right: '12px',
+                  top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', fontSize: '14px',
+                  color: '#52525b', padding: '0',
+                }}
+              >{showPassword ? '🙈' : '👁'}</button>
+            </div>
           </div>
 
           <button
@@ -240,17 +231,12 @@ export default function SignupPage() {
             disabled={loading || !email || !password || !fullName}
             style={{
               width: '100%',
-              background: loading || !email || !password || !fullName
-                ? '#1a1a1a' : '#3b82f6',
-              color: loading || !email || !password || !fullName
-                ? '#52525b' : '#fff',
-              fontSize: '14px',
-              fontWeight: '600',
-              padding: '11px',
-              borderRadius: '8px',
+              background: loading || !email || !password || !fullName ? '#1a1a1a' : '#3b82f6',
+              color: loading || !email || !password || !fullName ? '#52525b' : '#fff',
+              fontSize: '14px', fontWeight: '600',
+              padding: '11px', borderRadius: '8px',
               border: 'none',
-              cursor: loading || !email || !password || !fullName
-                ? 'not-allowed' : 'pointer',
+              cursor: loading || !email || !password || !fullName ? 'not-allowed' : 'pointer',
               letterSpacing: '-0.2px',
             }}
           >
@@ -259,16 +245,12 @@ export default function SignupPage() {
         </div>
 
         <p style={{
-          textAlign: 'center',
-          fontSize: '13px',
-          color: '#52525b',
-          marginTop: '20px',
+          textAlign: 'center', fontSize: '13px',
+          color: '#52525b', marginTop: '20px',
         }}>
           Already have an account?{' '}
           <Link href="/login" style={{
-            color: '#3b82f6',
-            textDecoration: 'none',
-            fontWeight: '500',
+            color: '#3b82f6', textDecoration: 'none', fontWeight: '500',
           }}>Sign in</Link>
         </p>
       </div>
