@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import AgentStream from '@/components/AgentStream'
 import WeeklyCalendar from '@/components/WeeklyCalendar'
@@ -20,6 +20,17 @@ export default function PlanPage() {
   const [totalHours, setTotalHours] = useState(0)
   const [error, setError] = useState('')
   const wsRef = useRef<WebSocket | null>(null)
+
+  useEffect(() => {
+    const template = localStorage.getItem('template')
+    if (template) {
+      const t = JSON.parse(template)
+      setGoals(t.goals)
+      setCommitments(t.commitments)
+      setPreferences(t.preferences)
+      localStorage.removeItem('template')
+    }
+  }, [])
 
   const startPlanning = () => {
     if (!goals.trim()) return
