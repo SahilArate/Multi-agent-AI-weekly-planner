@@ -105,20 +105,44 @@ export default function Navbar() {
         }}>
           {user ? (
             <>
-              <span style={{
-                fontSize: '12px',
-                color: '#333333',
-                maxWidth: '160px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}>{user.email}</span>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: '#1a1a1a',
+                border: '1px solid #2a2a2a',
+                borderRadius: '8px',
+                padding: '5px 10px 5px 8px',
+              }}>
+                <div style={{
+                  width: '22px', height: '22px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  color: '#fff',
+                  flexShrink: 0,
+                }}>
+                  {user.email?.charAt(0).toUpperCase()}
+                </div>
+                <span style={{
+                  fontSize: '12px',
+                  color: '#b0b0b0',
+                  maxWidth: '130px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}>{user.email}</span>
+              </div>
               <button onClick={handleLogout} style={{
                 fontSize: '12px',
                 fontWeight: '500',
-                color: '#52525b',
+                color: '#707070',
                 background: 'none',
-                border: '1px solid #1a1a1a',
+                border: '1px solid #2a2a2a',
                 padding: '5px 12px',
                 borderRadius: '6px',
                 cursor: 'pointer',
