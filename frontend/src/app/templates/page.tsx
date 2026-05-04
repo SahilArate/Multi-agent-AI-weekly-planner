@@ -99,3 +99,163 @@ const templates = [
     commitments: 'Regular work hours 9am to 5pm',
     preferences: 'Creative in the evening, write best after 7pm',
   },
+]
+
+export default function TemplatesPage() {
+  const router = useRouter()
+
+  const handleUseTemplate = (template: typeof templates[0]) => {
+    const user = localStorage.getItem('user')
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    // Store template in localStorage then redirect to plan page
+    localStorage.setItem('template', JSON.stringify({
+      goals: template.goals,
+      commitments: template.commitments,
+      preferences: template.preferences,
+    }))
+    router.push('/plan')
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+      <Navbar />
+
+      <div style={{
+        maxWidth: '1100px',
+        margin: '0 auto',
+        padding: '40px 24px',
+      }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '40px' }}>
+          <p style={{
+            fontSize: '12px',
+            fontWeight: '600',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color: '#52525b',
+            marginBottom: '8px',
+          }}>Quick start</p>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: '700',
+            letterSpacing: '-0.5px',
+            color: '#fafafa',
+            marginBottom: '8px',
+          }}>Plan templates</h1>
+          <p style={{ fontSize: '13px', color: '#52525b' }}>
+            Pick a template, agents will build your week instantly. All templates are fully customizable.
+          </p>
+        </div>
+
+        {/* Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '12px',
+        }}>
+          {templates.map((t) => (
+            <div key={t.id} style={{
+              background: '#111111',
+              border: '1px solid #1a1a1a',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'border-color 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#333333'}
+            onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#1a1a1a'}
+            >
+              {/* Top accent */}
+              <div style={{
+                height: '3px',
+                background: t.accent,
+              }}/>
+
+              <div style={{ padding: '20px', flex: 1 }}>
+                {/* Icon + title */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '10px',
+                }}>
+                  <div style={{
+                    width: '36px', height: '36px',
+                    borderRadius: '10px',
+                    background: t.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px',
+                    flexShrink: 0,
+                  }}>{t.emoji}</div>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#fafafa',
+                  }}>{t.title}</div>
+                </div>
+
+                <p style={{
+                  fontSize: '12px',
+                  color: '#52525b',
+                  lineHeight: '1.55',
+                  marginBottom: '14px',
+                }}>{t.desc}</p>
+
+                {/* Tags */}
+                <div style={{
+                  display: 'flex',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  marginBottom: '16px',
+                }}>
+                  {t.tags.map(tag => (
+                    <span key={tag} style={{
+                      fontSize: '11px',
+                      fontWeight: '500',
+                      color: t.accent,
+                      background: t.color,
+                      padding: '2px 8px',
+                      borderRadius: '100px',
+                    }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Button */}
+              <div style={{
+                padding: '0 20px 20px',
+              }}>
+                <button
+                  onClick={() => handleUseTemplate(t)}
+                  style={{
+                    width: '100%',
+                    background: '#1a1a1a',
+                    border: '1px solid #222222',
+                    color: '#fafafa',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    padding: '9px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = t.color}
+                  onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a1a1a'}
+                >
+                  Use this template →
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -2,14 +2,23 @@
 import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
+import { useEffect, useState } from 'react'
 
 export default function Navbar() {
-  const { user, logout } = useStore()
+  const { logout } = useStore()
   const router = useRouter()
   const pathname = usePathname()
+  const [user, setUser] = useState<{ email: string } | null>(null)
+
+  useEffect(() => {
+    // Read user only on client side — fixes hydration error
+    const saved = localStorage.getItem('user')
+    if (saved) setUser(JSON.parse(saved))
+  }, [pathname])
 
   const handleLogout = () => {
     logout()
+    setUser(null)
     router.push('/')
   }
 
@@ -24,7 +33,6 @@ export default function Navbar() {
         padding: '5px 10px',
         borderRadius: '6px',
         background: active ? '#1a1a1a' : 'transparent',
-        transition: 'color 0.15s',
       }}>{label}</Link>
     )
   }

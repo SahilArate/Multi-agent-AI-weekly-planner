@@ -97,3 +97,13 @@ export const createPlanWebSocket = (
 
   return ws
 }
+export const sendChatMessage = async (
+  messages: { role: string; content: string }[],
+  planContext: string
+) => {
+  const res = await api.post('/api/chat', {
+    messages,
+    plan_context: planContext,
+  })
+  return res.data.response
+}

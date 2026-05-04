@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import { useRouter } from 'next/navigation'
-import { getUserPlans } from '@/lib/api'
+import { getUserPlans, sendChatMessage } from '@/lib/api'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -77,35 +77,16 @@ export default function ChatPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: `You are an AI weekly planner assistant. The user has this weekly plan:
+      const planContext = plan
+        ? `Events: ${JSON.stringify(plan.events)}\nSummary: ${plan.week_summary}\nGoals: ${plan.goals}`
+        : 'No plan loaded'
 
-${plan ? JSON.stringify(plan.events, null, 2) : 'No plan loaded yet.'}
+      const allMessages = [...messages, userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      }))
 
-Plan summary: ${plan?.week_summary || 'N/A'}
-Goals: ${plan?.goals || 'N/A'}
-
-Help the user understand, modify, and optimize their weekly plan. 
-When they ask to move or change events, describe what the updated schedule would look like.
-Be concise, friendly, and specific. Use bullet points for lists.
-Format responses clearly — use ** for bold and bullet points where helpful.`,
-          messages: [
-            ...messages.map(m => ({
-              role: m.role,
-              content: m.content,
-            })),
-            { role: 'user', content: input.trim() }
-          ],
-        }),
-      })
-
-      const data = await response.json()
-      const text = data.content?.[0]?.text || 'Sorry, I could not process that.'
+      const text = await sendChatMessage(allMessages, planContext)
 
       setMessages(prev => [...prev, {
         role: 'assistant',
