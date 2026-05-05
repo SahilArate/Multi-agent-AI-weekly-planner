@@ -77,7 +77,11 @@ export const createPlanWebSocket = (
   onComplete: (events: PlanEvent[], summary: string, hours: number) => void,
   onError: (msg: string) => void
 ) => {
-  const ws = new WebSocket('ws://localhost:8000/api/ws/plan')
+  const wsUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+  .replace('https://', 'wss://')
+  .replace('http://', 'ws://')
+  
+const ws = new WebSocket(`${wsUrl}/api/ws/plan`)
 
   ws.onmessage = (event) => {
     const data: AgentMessage = JSON.parse(event.data)
