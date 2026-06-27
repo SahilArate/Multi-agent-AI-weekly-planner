@@ -101,6 +101,7 @@ const ws = new WebSocket(`${wsUrl}/api/ws/plan`)
 
   return ws
 }
+
 export const sendChatMessage = async (
   messages: { role: string; content: string }[],
   planContext: string
@@ -110,4 +111,14 @@ export const sendChatMessage = async (
     plan_context: planContext,
   })
   return res.data.response
+}
+
+export const forgotPassword = async (email: string) => {
+  const res = await api.post('/api/auth/forgot-password', { email })
+  return res.data
+}
+
+export const resetPassword = async (access_token: string, new_password: string) => {
+  const res = await api.post('/api/auth/reset-password', { access_token, new_password })
+  return res.data
 }
