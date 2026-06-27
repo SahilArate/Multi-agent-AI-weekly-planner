@@ -265,6 +265,28 @@ Multi-agent-AI-weekly-planner/
 
 ---
 
+
+## Deployment
+
+## ⚠️ Important: Supabase Free Tier
+
+This project uses Supabase for authentication and database. On the **free tier**, Supabase automatically **pauses your project after 1 week of inactivity**.
+
+### Symptoms
+- Users see errors when trying to sign up or log in
+- Railway logs show `[Errno -2] Name or service not known` or `timed out`
+
+### Fix
+1. Go to [supabase.com](https://supabase.com) → your project
+2. Click **Restore project** if you see a "Project paused" banner
+3. Wait 2-3 minutes for it to fully restore
+4. Go to Railway → your backend service → click **Redeploy**
+5. Try again — it should work now
+
+### Prevention
+- Visit your app at least once a week to keep Supabase active
+- Or upgrade to Supabase Pro to disable auto-pausing
+
 ## 📊 Database Schema
 
 ```sql
@@ -302,6 +324,7 @@ plans (
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat-square&logo=github)](https://github.com/SahilArate)
 
 ---
+
 
 <div align="center">
   <sub>⭐ If you found this useful, drop a star — it keeps me going!</sub>

@@ -18,8 +18,16 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+def check_supabase():
+    if supabase is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Database is temporarily unavailable. Please try again in a few minutes."
+        )
+
 @router.post("/signup")
 async def signup(request: SignUpRequest):
+    check_supabase()
     try:
         response = supabase.auth.sign_up({
             "email": request.email,
@@ -39,12 +47,15 @@ async def signup(request: SignUpRequest):
                 "email": response.user.email
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Signup failed: {e}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail="Database is temporarily unavailable. Please try again in a few minutes.")
 
 @router.post("/login")
 async def login(request: LoginRequest):
+    check_supabase()
     try:
         response = supabase.auth.sign_in_with_password({
             "email": request.email,
@@ -60,12 +71,15 @@ async def login(request: LoginRequest):
                 "email": response.user.email
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Login failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
 @router.post("/logout")
 async def logout():
+    check_supabase()
     try:
         supabase.auth.sign_out()
         return {"status": "success", "message": "Logged out"}
