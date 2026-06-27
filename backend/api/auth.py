@@ -9,6 +9,14 @@ from utils.supabase_client import supabase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    access_token: str
+    new_password: str
+
 class SignUpRequest(BaseModel):
     email: str
     password: str
@@ -84,4 +92,24 @@ async def logout():
         supabase.auth.sign_out()
         return {"status": "success", "message": "Logged out"}
     except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    check_supabase()
+    try:
+        supabase.auth.reset_password_email(request.email)
+        return {"status": "success", "message": "Password reset email sent."}
+    except Exception as e:
+        logger.error(f"Forgot password failed: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    check_supabase()
+    try:
+        supabase.auth.update_user({"password": request.new_password})
+        return {"status": "success", "message": "Password updated successfully."}
+    except Exception as e:
+        logger.error(f"Reset password failed: {e}")
         raise HTTPException(status_code=400, detail=str(e))
