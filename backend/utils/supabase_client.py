@@ -14,3 +14,17 @@ if not url or not key:
 else:
     supabase: Client = create_client(url, key)
     logger.info("Supabase client initialized")
+
+def get_user_from_token(token: str):
+    """
+    Takes the token sent from the frontend, asks Supabase who it belongs to.
+    Returns the user id if valid, None if not.
+    """
+    if supabase is None or not token:
+        return None
+    try:
+        response = supabase.auth.get_user(token)
+        return response.user.id
+    except Exception as e:
+        logger.warning(f"Invalid or expired token: {e}")
+        return None

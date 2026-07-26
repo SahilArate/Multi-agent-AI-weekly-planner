@@ -1,10 +1,12 @@
 'use client'
+
 import { useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import AgentStream from '@/components/AgentStream'
 import WeeklyCalendar from '@/components/WeeklyCalendar'
 import { createPlanWebSocket, PlanEvent, AgentMessage, savePlan } from '@/lib/api'
+import { useStore } from '@/lib/store'
 
 type Stage = 'input' | 'planning' | 'done'
 
@@ -23,13 +25,16 @@ export default function PlanPage() {
 
   useEffect(() => {
     const template = localStorage.getItem('template')
-    if (template) {
-      const t = JSON.parse(template)
+    if (!template) return
+
+    const t = JSON.parse(template)
+    localStorage.removeItem('template')
+
+    queueMicrotask(() => {
       setGoals(t.goals)
       setCommitments(t.commitments)
       setPreferences(t.preferences)
-      localStorage.removeItem('template')
-    }
+    })
   }, [])
 
   const startPlanning = () => {
@@ -69,19 +74,13 @@ export default function PlanPage() {
   }
 
   const handleSave = async () => {
-    const savedUser = localStorage.getItem('user')
-    if (!savedUser) {
-      router.push('/login')
-      return
-    }
-    const u = JSON.parse(savedUser)
-    if (!u?.id) {
+    const { user } = useStore.getState()
+    if (!user) {
       router.push('/login')
       return
     }
     try {
       await savePlan({
-        user_id: u.id,
         goals,
         commitments,
         preferences,
@@ -90,8 +89,9 @@ export default function PlanPage() {
         total_hours: totalHours,
       })
       router.push('/dashboard')
-    } catch (e: any) {
-      setError('Failed to save. ' + (e?.response?.data?.detail || 'Please login first.'))
+    } catch (e) {
+      const err = e as { response?: { data?: { detail?: string } } }
+      setError('Failed to save. ' + (err?.response?.data?.detail || 'Please login first.'))
     }
   }
 
@@ -114,7 +114,7 @@ export default function PlanPage() {
             marginBottom: '4px',
           }}>Plan my week</h1>
           <p style={{ fontSize: '13px', color: '#52525b' }}>
-            Tell the agents your goals — they'll handle the rest.
+            Tell the agents your goals — they&apos;ll handle the rest.
           </p>
         </div>
 

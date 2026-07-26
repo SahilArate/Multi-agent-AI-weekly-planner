@@ -1,4 +1,5 @@
 'use client'
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -6,42 +7,35 @@ import Navbar from '@/components/Navbar'
 import { useStore } from '@/lib/store'
 import { getUserPlans } from '@/lib/api'
 
+interface PlanEvent {
+  title: string
+  day: string
+  start_time: string
+  end_time: string
+  category: string
+  priority: string
+  color: string
+}
+
 interface Plan {
   id: string
   goals: string
   week_summary: string
   total_hours: number
   created_at: string
-  events: any[]
+  events: PlanEvent[]
 }
 
 export default function DashboardPage() {
-  const { user, logout } = useStore()
+  const { user } = useStore()
   const router = useRouter()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
 
-  useEffect(() => {
-    // Check if user is logged in
-    if (!user) {
-      // Try to restore from localStorage
-      const savedUser = localStorage.getItem('user')
-      const savedToken = localStorage.getItem('token')
-      if (!savedUser || !savedToken) {
-        router.push('/login')
-        return
-      }
-    }
-    fetchPlans()
-  }, [])
-
   const fetchPlans = async () => {
     try {
-      const savedUser = localStorage.getItem('user')
-      if (!savedUser) return
-      const u = JSON.parse(savedUser)
-      const res = await getUserPlans(u.id)
+      const res = await getUserPlans()
       setPlans(res.plans || [])
     } catch (e) {
       console.error('Failed to fetch plans', e)
@@ -49,6 +43,18 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    // fetchPlans is async and only calls setState after an await,
+    // so this doesn't cause a synchronous cascading render
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPlans()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
@@ -58,12 +64,8 @@ export default function DashboardPage() {
     })
   }
 
-  const getCategoryCount = (events: any[], category: string) =>
+  const getCategoryCount = (events: PlanEvent[], category: string) =>
     events.filter(e => e.category === category).length
-
-  const savedUser = typeof window !== 'undefined'
-    ? JSON.parse(localStorage.getItem('user') || '{}')
-    : {}
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
@@ -207,7 +209,7 @@ export default function DashboardPage() {
                 flexDirection: 'column',
                 gap: '6px',
               }}>
-                {(selectedPlan.events || []).map((event: any, i: number) => (
+                {(selectedPlan.events || []).map((event: PlanEvent, i: number) => (
                   <div key={i} style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -268,7 +270,7 @@ export default function DashboardPage() {
               marginBottom: '4px',
             }}>Welcome back 👋</h1>
             <p style={{ fontSize: '13px', color: '#52525b' }}>
-              {savedUser?.email || 'your account'}
+              {user?.email || 'your account'}
             </p>
           </div>
           <Link href="/plan" style={{
@@ -375,7 +377,7 @@ export default function DashboardPage() {
                   marginBottom: '12px', lineHeight: '1.4',
                   display: '-webkit-box', WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                } as any}>
+                } as React.CSSProperties}>
                   {plan.week_summary || plan.goals}
                 </div>
 

@@ -7,6 +7,16 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+  }
+  return config
+})
+
 // ── Types ────────────────────────────────────────────
 export interface PlanEvent {
   title: string
@@ -22,7 +32,7 @@ export interface AgentMessage {
   agent: string
   status: 'thinking' | 'done' | 'error' | 'complete'
   message: string
-  data?: any
+  data?: Record<string, unknown>
 }
 
 // ── API calls ────────────────────────────────────────
@@ -40,7 +50,6 @@ export const generatePlan = async (
 }
 
 export const savePlan = async (payload: {
-  user_id: string
   goals: string
   commitments: string
   preferences: string
@@ -52,8 +61,8 @@ export const savePlan = async (payload: {
   return res.data
 }
 
-export const getUserPlans = async (user_id: string) => {
-  const res = await api.get(`/api/plans/${user_id}`)
+export const getUserPlans = async () => {
+  const res = await api.get('/api/plans/me')
   return res.data
 }
 
@@ -72,6 +81,12 @@ export const login = async (email: string, password: string) => {
 }
 
 // ── WebSocket helper ─────────────────────────────────
+interface PlanCompletePayload {
+  events: PlanEvent[]
+  week_summary: string
+  total_hours: number
+}
+
 export const createPlanWebSocket = (
   onMessage: (msg: AgentMessage) => void,
   onComplete: (events: PlanEvent[], summary: string, hours: number) => void,
@@ -86,11 +101,12 @@ const ws = new WebSocket(`${wsUrl}/api/ws/plan`)
   ws.onmessage = (event) => {
     const data: AgentMessage = JSON.parse(event.data)
 
-    if (data.status === 'complete') {
+    if (data.status === 'complete' && data.data) {
+      const payload = data.data as unknown as PlanCompletePayload
       onComplete(
-        data.data.events,
-        data.data.week_summary,
-        data.data.total_hours
+        payload.events,
+        payload.week_summary,
+        payload.total_hours
       )
     } else if (data.status === 'error') {
       onError(data.message)
