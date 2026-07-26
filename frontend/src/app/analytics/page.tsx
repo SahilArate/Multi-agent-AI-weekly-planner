@@ -1,8 +1,19 @@
 'use client'
+import { useStore } from '@/lib/store'
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import { useRouter } from 'next/navigation'
 import { getUserPlans } from '@/lib/api'
+
+interface PlanEvent {
+  title: string
+  day: string
+  start_time: string
+  end_time: string
+  category: string
+  priority: string
+  color: string
+}
 
 interface Plan {
   id: string
@@ -10,24 +21,18 @@ interface Plan {
   week_summary: string
   total_hours: number
   created_at: string
-  events: any[]
+  events: PlanEvent[]
 }
 
 export default function AnalyticsPage() {
   const router = useRouter()
+  const { user } = useStore()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadPlans()
-  }, [])
-
   const loadPlans = async () => {
     try {
-      const savedUser = localStorage.getItem('user')
-      if (!savedUser) { router.push('/login'); return }
-      const u = JSON.parse(savedUser)
-      const res = await getUserPlans(u.id)
+      const res = await getUserPlans()
       setPlans(res.plans || [])
     } catch (e) {
       console.error(e)
@@ -35,6 +40,16 @@ export default function AnalyticsPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadPlans()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Compute stats ─────────────────────────────────
   const totalPlans = plans.length
@@ -51,7 +66,7 @@ export default function AnalyticsPage() {
   }
 
   plans.forEach(plan => {
-    (plan.events || []).forEach((e: any) => {
+  (plan.events || []).forEach((e: PlanEvent) => {
       const cat = e.category?.toLowerCase() || 'personal'
       if (categoryHours[cat] !== undefined) {
         const start = e.start_time?.split(':').map(Number)
