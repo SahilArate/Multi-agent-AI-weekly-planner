@@ -17,6 +17,24 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// If the backend ever says our token is invalid or expired,
+// clear the session and send the user back to login instead of
+// leaving them stuck on a page that silently fails.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+      localStorage.removeItem('lastActive')
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 // ── Types ────────────────────────────────────────────
 export interface PlanEvent {
   title: string
