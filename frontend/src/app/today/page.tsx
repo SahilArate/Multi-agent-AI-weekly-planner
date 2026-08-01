@@ -1,20 +1,17 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Navbar from '@/components/Navbar'
 import { useRouter } from 'next/navigation'
-import { getUserPlans } from '@/lib/api'
+import { getUserPlans, PlanEvent } from '@/lib/api'
+import { useStore } from '@/lib/store'
 
-interface Task {
-  title: string
-  start_time: string
-  end_time: string
-  category: string
-  color: string
+interface Task extends PlanEvent {
   completed: boolean
 }
 
 export default function TodayPage() {
   const router = useRouter()
+  const { user } = useStore()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [timerTask, setTimerTask] = useState<string | null>(null)
@@ -28,12 +25,44 @@ export default function TodayPage() {
     weekday: 'long', month: 'long', day: 'numeric'
   })
 
+  const loadTodayTasks = useCallback(async () => {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    try {
+      const res = await getUserPlans()
+      const plans = res.plans || []
+
+      if (plans.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      // Get latest plan
+      const latest = plans[0]
+      const todayEvents = (latest.events || [])
+        .filter((e: PlanEvent) => e.day?.toLowerCase() === today.toLowerCase())
+        .sort((a: PlanEvent, b: PlanEvent) => a.start_time?.localeCompare(b.start_time))
+        .map((e: PlanEvent) => ({ ...e, completed: false }))
+
+      setTasks(todayEvents)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }, [user, router, today])
+
   useEffect(() => {
+    // loadTodayTasks is async and only calls setState after an await,
+    // so this doesn't cause a synchronous cascading render
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTodayTasks()
     // Restore completed tasks from localStorage
     const saved = localStorage.getItem('completed_tasks_' + new Date().toDateString())
     if (saved) setCompletedIds(new Set(JSON.parse(saved)))
-  }, [])
+  }, [loadTodayTasks])
 
   useEffect(() => {
     if (timerRunning) {
@@ -52,37 +81,6 @@ export default function TodayPage() {
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [timerRunning])
-
-  const loadTodayTasks = async () => {
-    try {
-      const savedUser = localStorage.getItem('user')
-      if (!savedUser) {
-        router.push('/login')
-        return
-      }
-      const u = JSON.parse(savedUser)
-      const res = await getUserPlans(u.id)
-      const plans = res.plans || []
-
-      if (plans.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      // Get latest plan
-      const latest = plans[0]
-      const todayEvents = (latest.events || [])
-        .filter((e: any) => e.day?.toLowerCase() === today.toLowerCase())
-        .sort((a: any, b: any) => a.start_time?.localeCompare(b.start_time))
-        .map((e: any) => ({ ...e, completed: false }))
-
-      setTasks(todayEvents)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const toggleComplete = (index: number) => {
     const newSet = new Set(completedIds)

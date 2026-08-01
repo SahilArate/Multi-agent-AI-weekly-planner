@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, Header
 from pydantic import BaseModel
 from loguru import logger
 from agents.goal_agent import run_goal_agent
@@ -10,7 +10,7 @@ from agents.calendar_agent import run_calendar_agent
 from agents.energy_agent import run_energy_agent
 from agents.balance_agent import run_balance_agent
 from agents.planner_agent import run_planner_agent
-from utils.supabase_client import supabase
+from utils.supabase_client import supabase, get_user_from_token
 from datetime import date
 from typing import List
 import json
@@ -27,7 +27,6 @@ class FullPlanRequest(BaseModel):
     preferences: str = "I am a morning person, most productive before noon"
 
 class SavePlanRequest(BaseModel):
-    user_id: str
     goals: str
     commitments: str
     preferences: str
@@ -35,6 +34,7 @@ class SavePlanRequest(BaseModel):
     week_summary: str
     total_hours: float
 
+    
 # ── Goal parse endpoint ──────────────────────────────
 @router.post("/goals/parse")
 async def parse_goals(request: PlanRequest):
@@ -78,10 +78,16 @@ async def generate_plan(request: FullPlanRequest):
 
 # ── Save plan endpoint ───────────────────────────────
 @router.post("/plan/save")
-async def save_plan(request: SavePlanRequest):
+async def save_plan(request: SavePlanRequest, authorization: str = Header(None)):
+    token = authorization.replace("Bearer ", "") if authorization else None
+    user_id = get_user_from_token(token)
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Please log in to save a plan.")
+
     try:
         data = supabase.table("plans").insert({
-            "user_id": request.user_id,
+            "user_id": user_id,
             "goals": request.goals,
             "commitments": request.commitments,
             "preferences": request.preferences,
@@ -90,15 +96,22 @@ async def save_plan(request: SavePlanRequest):
             "week_summary": request.week_summary,
             "total_hours": request.total_hours
         }).execute()
-        logger.success(f"Plan saved for user: {request.user_id}")
+        logger.success(f"Plan saved for user: {user_id}")
         return {"status": "success", "plan_id": data.data[0]["id"]}
     except Exception as e:
         logger.error(f"Save plan failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
+        
 # ── Get plans endpoint ───────────────────────────────
-@router.get("/plans/{user_id}")
-async def get_plans(user_id: str):
+
+@router.get("/plans/me")
+async def get_plans(authorization: str = Header(None)):
+    token = authorization.replace("Bearer ", "") if authorization else None
+    user_id = get_user_from_token(token)
+
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Please log in to view your plans.")
+
     try:
         data = supabase.table("plans")\
             .select("*")\
