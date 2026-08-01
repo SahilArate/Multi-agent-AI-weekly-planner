@@ -1,12 +1,17 @@
 'use client'
 import Link from 'next/link'
+import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
 export default function Navbar() {
-  const { user, logout } = useStore()
+  const { user, logout, updateActivity } = useStore()
   const router = useRouter()
   const pathname = usePathname()
+
+  useEffect(() => {
+    if (user) updateActivity()
+  }, [user, pathname, updateActivity])
 
   const handleLogout = () => {
     logout()
