@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Navbar from '@/components/Navbar'
 import { useRouter } from 'next/navigation'
 import { getUserPlans, sendChatMessage } from '@/lib/api'
+import { useStore } from '@/lib/store'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -10,15 +11,26 @@ interface Message {
   timestamp: Date
 }
 
+interface PlanEvent {
+  title: string
+  day: string
+  start_time: string
+  end_time: string
+  category: string
+  priority: string
+  color: string
+}
+
 interface Plan {
   id: string
-  events: any[]
+  events: PlanEvent[]
   goals: string
   week_summary: string
 }
 
 export default function ChatPage() {
   const router = useRouter()
+  const { user } = useStore()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,20 +39,10 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    loadLatestPlan()
-  }, [])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  const loadLatestPlan = async () => {
+  const loadLatestPlan = useCallback(async () => {
+    if (!user) { router.push('/login'); return }
     try {
-      const savedUser = localStorage.getItem('user')
-      if (!savedUser) { router.push('/login'); return }
-      const u = JSON.parse(savedUser)
-      const res = await getUserPlans(u.id)
+      const res = await getUserPlans()
       const plans = res.plans || []
       if (plans.length > 0) {
         setPlan(plans[0])
@@ -61,7 +63,18 @@ export default function ChatPage() {
     } finally {
       setLoadingPlan(false)
     }
-  }
+  }, [user, router])
+
+  useEffect(() => {
+    // loadLatestPlan is async and only calls setState after an await,
+    // so this doesn't cause a synchronous cascading render
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadLatestPlan()
+  }, [loadLatestPlan])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
@@ -93,7 +106,7 @@ export default function ChatPage() {
         content: text,
         timestamp: new Date(),
       }])
-    } catch (e) {
+    } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: 'Something went wrong. Please try again.',
