@@ -74,6 +74,7 @@ export const savePlan = async (payload: {
   events: PlanEvent[]
   week_summary: string
   total_hours: number
+  duration_weeks: number
 }) => {
   const res = await api.post('/api/plan/save', payload)
   return res.data
