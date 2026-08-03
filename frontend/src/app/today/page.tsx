@@ -39,9 +39,31 @@ export default function TodayPage() {
         return
       }
 
-      // Get latest plan
-      const latest = plans[0]
-      const todayEvents = (latest.events || [])
+      // A plan is "active" if today falls within week_start to
+      // week_start + duration_weeks. Plans without a duration_weeks
+      // value (older data) are treated as never expiring.
+      const isPlanActive = (plan: { week_start?: string; duration_weeks?: number }) => {
+        if (!plan.week_start) return true
+        const start = new Date(plan.week_start)
+        if (Number.isNaN(start.getTime())) return true
+        if (!plan.duration_weeks) return true
+        const end = new Date(start)
+        end.setDate(end.getDate() + plan.duration_weeks * 7)
+        const now = new Date()
+        return now >= start && now < end
+      }
+
+      // Plans are already ordered newest-first, so this finds the
+      // most recent plan that hasn't expired yet.
+      const activePlan = plans.find(isPlanActive)
+
+      if (!activePlan) {
+        setTasks([])
+        setLoading(false)
+        return
+      }
+
+      const todayEvents = (activePlan.events || [])
         .filter((e: PlanEvent) => e.day?.toLowerCase() === today.toLowerCase())
         .sort((a: PlanEvent, b: PlanEvent) => a.start_time?.localeCompare(b.start_time))
         .map((e: PlanEvent) => ({ ...e, completed: false }))
