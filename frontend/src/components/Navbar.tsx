@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
@@ -8,11 +8,20 @@ export default function Navbar() {
   const { user, logout, updateActivity } = useStore()
   const router = useRouter()
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+useEffect(() => {
+    // Intentional one-time mount flag to avoid SSR/client hydration
+    // mismatches on auth-dependent UI — not a cascading state update.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (user) updateActivity()
   }, [user, pathname, updateActivity])
 
+  const showLoggedIn = mounted && !!user
   const handleLogout = () => {
     logout()
     router.push('/')
@@ -77,7 +86,7 @@ export default function Navbar() {
         </Link>
 
         {/* Center nav — only show when logged in */}
-        {user && (
+        {showLoggedIn && (
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -99,7 +108,7 @@ export default function Navbar() {
           gap: '8px',
           flexShrink: 0,
         }}>
-          {user ? (
+          {showLoggedIn ? (
             <>
               <div style={{
                 display: 'flex',

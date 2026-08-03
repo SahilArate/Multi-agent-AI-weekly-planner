@@ -16,6 +16,7 @@ export default function PlanPage() {
   const [goals, setGoals] = useState('')
   const [commitments, setCommitments] = useState('')
   const [preferences, setPreferences] = useState('')
+  const [durationWeeks, setDurationWeeks] = useState(1)
   const [messages, setMessages] = useState<AgentMessage[]>([])
   const [events, setEvents] = useState<PlanEvent[]>([])
   const [summary, setSummary] = useState('')
@@ -87,6 +88,7 @@ export default function PlanPage() {
         events,
         week_summary: summary,
         total_hours: totalHours,
+        duration_weeks: durationWeeks,
       })
       router.push('/dashboard')
     } catch (e) {
@@ -177,6 +179,61 @@ export default function PlanPage() {
                     outline: 'none',
                     fontFamily: 'DM Sans, sans-serif',
                     lineHeight: '1.5',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#a1a1aa',
+                  display: 'block',
+                  marginBottom: '8px',
+                }}>⚡ Energy preferences</label>
+                <textarea
+                  value={preferences}
+                  onChange={e => setPreferences(e.target.value)}
+                  placeholder="I am a morning person, most productive before noon..."
+                  rows={2}
+                  style={{
+                    width: '100%',
+                    background: '#0a0a0a',
+                    border: '1px solid #222222',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    fontSize: '13px',
+                    color: '#fafafa',
+                    resize: 'vertical',
+                    outline: 'none',
+                    fontFamily: 'DM Sans, sans-serif',
+                    lineHeight: '1.5',
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: '#a1a1aa',
+                  display: 'block',
+                  marginBottom: '8px',
+                }}>🔁 Repeat this schedule for how many weeks?</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={52}
+                  value={durationWeeks}
+                  onChange={e => setDurationWeeks(Math.max(1, Number(e.target.value)))}
+                  style={{
+                    width: '100%',
+                    background: '#0a0a0a',
+                    border: '1px solid #222222',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    fontSize: '13px',
+                    color: '#fafafa',
+                    outline: 'none',
+                    fontFamily: 'DM Sans, sans-serif',
                   }}
                 />
               </div>

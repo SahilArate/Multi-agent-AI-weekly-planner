@@ -32,7 +32,14 @@ export default function DashboardPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [mounted, setMounted] = useState(false)
 
+useEffect(() => {
+    // Intentional one-time mount flag to avoid SSR/client hydration
+    // mismatches on auth-dependent UI — not a cascading state update.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true)
+  }, [])
   const fetchPlans = async () => {
     try {
       const res = await getUserPlans()
@@ -270,7 +277,7 @@ export default function DashboardPage() {
               marginBottom: '4px',
             }}>Welcome back 👋</h1>
             <p style={{ fontSize: '13px', color: '#52525b' }}>
-              {user?.email || 'your account'}
+              {mounted ? (user?.email || 'your account') : 'your account'}
             </p>
           </div>
           <Link href="/plan" style={{

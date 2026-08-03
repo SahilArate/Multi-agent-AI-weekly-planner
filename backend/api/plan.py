@@ -33,6 +33,7 @@ class SavePlanRequest(BaseModel):
     events: List[dict]
     week_summary: str
     total_hours: float
+    duration_weeks: int = 1
 
     
 # ── Goal parse endpoint ──────────────────────────────
@@ -94,7 +95,8 @@ async def save_plan(request: SavePlanRequest, authorization: str = Header(None))
             "week_start": str(date.today()),
             "events": request.events,
             "week_summary": request.week_summary,
-            "total_hours": request.total_hours
+            "total_hours": request.total_hours,
+            "duration_weeks": request.duration_weeks
         }).execute()
         logger.success(f"Plan saved for user: {user_id}")
         return {"status": "success", "plan_id": data.data[0]["id"]}
