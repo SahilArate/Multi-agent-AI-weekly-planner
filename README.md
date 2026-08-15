@@ -53,7 +53,7 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 | 💬 **AI Chat** | Chat with your plan — ask questions or request changes |
 | 📋 **Templates** | 8 pre-built goal templates (Interview Prep, Deep Work, Fitness, etc.) |
 | 🔐 **Auth** | Supabase email auth with JWT, email verification, saved plans per user |
-| 🚀 **Deployed** | Frontend on Vercel, Backend on Railway, DB on Supabase |
+| 🚀 **Deployed** | Frontend on Vercel, Backend on Render, DB on Supabase |
 
 ---
 
@@ -123,7 +123,7 @@ All agents are connected via **LangGraph StateGraph** — each agent's output be
 | Tech | Use |
 |---|---|
 | Vercel | Frontend hosting + CDN |
-| Railway | Backend hosting + auto-deploy |
+| Render | Backend hosting + auto-deploy |
 | Supabase | Managed PostgreSQL database |
 | GitHub Actions | CI/CD pipeline |
 
@@ -236,7 +236,7 @@ Multi-agent-AI-weekly-planner/
 │   │   └── supabase_client.py   ← DB client
 │   ├── main.py                  ← FastAPI entry point
 │   ├── requirements.txt
-│   ├── Procfile                 ← Railway deploy
+│   ├── Procfile                 ← Render deploy
 │   └── .env.example
 ├── frontend/
 │   ├── src/
@@ -274,13 +274,13 @@ This project uses Supabase for authentication and database. On the **free tier**
 
 ### Symptoms
 - Users see errors when trying to sign up or log in
-- Railway logs show `[Errno -2] Name or service not known` or `timed out`
+- Render logs show `[Errno -2] Name or service not known` or `timed out`
 
 ### Fix
 1. Go to [supabase.com](https://supabase.com) → your project
 2. Click **Restore project** if you see a "Project paused" banner
 3. Wait 2-3 minutes for it to fully restore
-4. Go to Railway → your backend service → click **Redeploy**
+4. Go to Render → your backend service → click **Manual Deploy → Deploy latest commit**
 5. Try again — it should work now
 
 ### Prevention
@@ -310,7 +310,7 @@ plans (
 - **Multi-agent AI systems** — LangGraph StateGraph with 5 typed agent nodes
 - **Real-time architecture** — WebSocket streaming with async FastAPI
 - **RAG pipeline** — pgvector embeddings for habit memory
-- **Production deployment** — Vercel + Railway + Supabase + Docker
+- **Production deployment** — Vercel + Render + Supabase + Docker
 - **Full-stack ownership** — Frontend, backend, database, auth, CI/CD
 
 ---
