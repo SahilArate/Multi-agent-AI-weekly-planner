@@ -14,10 +14,19 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false)
   const router = useRouter()
 
+  const validatePassword = (pw: string): string | null => {
+    if (pw.length < 8) return 'Password must be at least 8 characters'
+    if (!/[A-Z]/.test(pw)) return 'Password must include at least one capital letter'
+    if (!/[0-9]/.test(pw)) return 'Password must include at least one number'
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\/;']/.test(pw)) return 'Password must include at least one special character'
+    return null
+  }
+
   const handleSignup = async () => {
     if (!email || !password || !fullName) return
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setError(passwordError)
       return
     }
     setLoading(true)
@@ -201,7 +210,7 @@ export default function SignupPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Min. 6 characters"
+                placeholder="Min. 8 chars, 1 capital, 1 number, 1 symbol"
                 autoComplete="new-password"
                 onKeyDown={e => e.key === 'Enter' && handleSignup()}
                 style={{
