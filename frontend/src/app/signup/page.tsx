@@ -22,11 +22,18 @@ export default function SignupPage() {
     return null
   }
 
+  const passwordChecks = {
+    length: password.length >= 8,
+    capital: /[A-Z]/.test(password),
+    number: /[0-9]/.test(password),
+    special: /[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\/;']/.test(password),
+  }
+  const isPasswordValid = Object.values(passwordChecks).every(Boolean)
+
   const handleSignup = async () => {
     if (!email || !password || !fullName) return
-    const passwordError = validatePassword(password)
-    if (passwordError) {
-      setError(passwordError)
+    if (!isPasswordValid) {
+      setError('Please meet all password requirements below')
       return
     }
     setLoading(true)
@@ -210,7 +217,7 @@ export default function SignupPage() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Min. 8 chars, 1 capital, 1 number, 1 symbol"
+                placeholder="Create a password"
                 autoComplete="new-password"
                 onKeyDown={e => e.key === 'Enter' && handleSignup()}
                 style={{
@@ -233,19 +240,45 @@ export default function SignupPage() {
                 }}
               >{showPassword ? '🙈' : '👁'}</button>
             </div>
+
+            <div style={{
+              marginTop: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '5px',
+            }}>
+              {[
+                { label: 'At least 8 characters', met: passwordChecks.length },
+                { label: 'One capital letter', met: passwordChecks.capital },
+                { label: 'One number', met: passwordChecks.number },
+                { label: 'One special character', met: passwordChecks.special },
+              ].map((req) => (
+                <div key={req.label} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '12px',
+                  color: req.met ? '#4ade80' : '#52525b',
+                  transition: 'color 200ms ease',
+                }}>
+                  <span style={{ fontSize: '11px' }}>{req.met ? '✓' : '○'}</span>
+                  {req.label}
+                </div>
+              ))}
+            </div>
           </div>
 
           <button
             onClick={handleSignup}
-            disabled={loading || !email || !password || !fullName}
+            disabled={loading || !email || !password || !fullName || !isPasswordValid}
             style={{
               width: '100%',
-              background: loading || !email || !password || !fullName ? '#1a1a1a' : '#3b82f6',
-              color: loading || !email || !password || !fullName ? '#52525b' : '#fff',
+              background: loading || !email || !password || !fullName || !isPasswordValid ? '#1a1a1a' : '#3b82f6',
+              color: loading || !email || !password || !fullName || !isPasswordValid ? '#52525b' : '#fff',
               fontSize: '14px', fontWeight: '600',
               padding: '11px', borderRadius: '8px',
               border: 'none',
-              cursor: loading || !email || !password || !fullName ? 'not-allowed' : 'pointer',
+              cursor: loading || !email || !password || !fullName || !isPasswordValid ? 'not-allowed' : 'pointer',
               letterSpacing: '-0.2px',
             }}
           >
