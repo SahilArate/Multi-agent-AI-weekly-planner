@@ -24,7 +24,7 @@ async def run_balance_agent(goals_json: str, free_slots_json: str) -> BalanceAge
     logger.info("Balance Agent started")
 
     llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         temperature=0.3,
         api_key=os.getenv("GROQ_API_KEY")
     )
