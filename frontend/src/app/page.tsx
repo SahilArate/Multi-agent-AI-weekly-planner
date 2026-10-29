@@ -487,23 +487,56 @@ export default function Home() {
       {/* FOOTER */}
       <footer style={{
         borderTop: '1px solid #1a1a1a',
-        padding: '24px',
-        textAlign: 'center',
-        boxShadow: 'inset 0 1px 0 #1a1a1a',
+        padding: '28px 24px',
+        background: '#0a0a0a',
       }}>
-        <p style={{ fontSize: '12px', color: '#333333' }}>
-          Built by Sahil Arate · Multi-Agent AI Weekly Planner · 2025
-          
-        </p>
-        <p style={{ fontSize: '12px', color: '#333333', marginTop: '8px' }}>
-          Mailto: <a href="sahilarate87@gmail.com" style={{ color: '#3b82f6', textDecoration: 'underline' }}>sahilarate87@gmail.com</a>
-
-        </p>
-        <p style={{ fontSize: '12px', color: '#333333', marginTop: '8px' }}>
-          GitHub: <a href="https://github.com/sahilarate" style={{ color: '#3b82f6', textDecoration: 'underline' }} target="_blank" rel="noopener noreferrer">
-            https://github.com/sahilarate
-          </a>
-        </p>
+        <div style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '20px 32px',
+        }}>
+          <div>
+            <p style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#d4d4d8',
+              marginBottom: '6px',
+            }}>Built by Sahil Arate</p>
+            <p style={{ fontSize: '12px', color: '#71717a', margin: 0 }}>
+              Multi-Agent AI Weekly Planner <span style={{ color: '#3f3f46' }}>·</span> © 2025
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <a href="mailto:sahilarate87@gmail.com" style={{
+              color: '#a1a1aa',
+              fontSize: '13px',
+              fontWeight: '500',
+              textDecoration: 'none',
+              padding: '9px 13px',
+              border: '1px solid #27272a',
+              borderRadius: '8px',
+              transition: 'color 150ms ease, border-color 150ms ease',
+            }}>
+              Email
+            </a>
+            <a href="https://github.com/sahilarate" style={{
+              color: '#a1a1aa',
+              fontSize: '13px',
+              fontWeight: '500',
+              textDecoration: 'none',
+              padding: '9px 13px',
+              border: '1px solid #27272a',
+              borderRadius: '8px',
+              transition: 'color 150ms ease, border-color 150ms ease',
+            }} target="_blank" rel="noopener noreferrer">
+              GitHub ↗
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   )
