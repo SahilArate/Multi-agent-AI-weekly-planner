@@ -9,8 +9,9 @@ export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
-useEffect(() => {
+  useEffect(() => {
     // Intentional one-time mount flag to avoid SSR/client hydration
     // mismatches on auth-dependent UI — not a cascading state update.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -31,66 +32,85 @@ useEffect(() => {
     const active = pathname === href
     return (
       <Link href={href} style={{
-        fontSize: '13px',
+        fontSize: '12px',
         fontWeight: '500',
-        color: active ? '#fafafa' : '#52525b',
+        color: active ? '#f4f4f5' : '#a1a1aa',
         textDecoration: 'none',
-        padding: '5px 10px',
-        borderRadius: '6px',
-        background: active ? '#1a1a1a' : 'transparent',
-      }}>{label}</Link>
+        padding: '8px 11px',
+        borderRadius: '8px',
+        background: active ? 'rgba(63, 63, 70, 0.55)' : 'transparent',
+        transition: 'color 150ms ease, background 150ms ease',
+      }} aria-current={active ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{label}</Link>
     )
   }
 
   return (
-    <nav style={{
-      borderBottom: '1px solid #1a1a1a',
-      background: '#0a0a0a',
+    <nav className="site-nav" style={{
+      borderBottom: '1px solid rgba(63, 63, 70, 0.45)',
+      background: 'rgba(10, 10, 10, 0.86)',
       position: 'sticky',
       top: 0,
       zIndex: 50,
+      backdropFilter: 'blur(18px)',
+      WebkitBackdropFilter: 'blur(18px)',
     }}>
-      <div style={{
+      <div className="site-nav__inner" style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '0 24px',
-        height: '52px',
+        padding: '0 28px',
+        minHeight: '68px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '16px',
+        gap: '24px',
       }}>
         {/* Logo */}
         <Link href="/" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '10px',
           textDecoration: 'none',
           flexShrink: 0,
         }}>
           <div style={{
-            width: '26px', height: '26px',
-            background: '#2563eb',
-            borderRadius: '7px',
+            width: '34px', height: '34px',
+            background: 'linear-gradient(145deg, #3b82f6, #7c3aed)',
+            borderRadius: '10px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '13px',
+            fontSize: '16px',
+            boxShadow: '0 4px 16px rgba(59, 130, 246, 0.22)',
           }}>🧠</div>
-          <span style={{
-            fontWeight: '700',
-            fontSize: '14px',
-            color: '#fafafa',
-            letterSpacing: '-0.3px',
-          }}>WeeklyAI</span>
+          <div>
+            <span style={{
+              display: 'block',
+              fontWeight: '700',
+              fontSize: '15px',
+              color: '#fafafa',
+              letterSpacing: '-0.4px',
+              lineHeight: '1.1',
+            }}>WeeklyAI</span>
+            <span className="site-nav__tagline" style={{
+              display: 'block',
+              marginTop: '4px',
+              fontSize: '9px',
+              fontWeight: '600',
+              color: '#71717a',
+              letterSpacing: '0.12em',
+            }}>PLAN WITH AI</span>
+          </div>
         </Link>
 
         {/* Center nav — only show when logged in */}
         {showLoggedIn && (
-          <div style={{
-            display: 'flex',
+          <div className={`site-nav__links${menuOpen ? ' site-nav__links--open' : ''}`} style={{
             alignItems: 'center',
-            gap: '2px',
+            gap: '3px',
+            padding: '4px',
+            border: '1px solid rgba(63, 63, 70, 0.5)',
+            borderRadius: '12px',
+            background: 'rgba(24, 24, 27, 0.68)',
           }}>
             {navLink('/today', 'Today')}
             {navLink('/plan', 'Plan')}
@@ -102,22 +122,22 @@ useEffect(() => {
         )}
 
         {/* Right */}
-        <div style={{
+        <div className="site-nav__actions" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '10px',
           flexShrink: 0,
         }}>
           {showLoggedIn ? (
             <>
-              <div style={{
+              <div className="site-nav__user" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: '#1a1a1a',
-                border: '1px solid #2a2a2a',
-                borderRadius: '8px',
-                padding: '5px 10px 5px 8px',
+                background: 'rgba(24, 24, 27, 0.8)',
+                border: '1px solid #303036',
+                borderRadius: '10px',
+                padding: '5px 11px 5px 7px',
               }}>
                 <div style={{
                   width: '22px', height: '22px',
@@ -133,7 +153,7 @@ useEffect(() => {
                 }}>
                   {user.email?.charAt(0).toUpperCase()}
                 </div>
-                <span style={{
+                <span className="site-nav__email" style={{
                   fontSize: '12px',
                   color: '#b0b0b0',
                   maxWidth: '130px',
@@ -144,34 +164,50 @@ useEffect(() => {
               </div>
               <button onClick={handleLogout} style={{
                 fontSize: '12px',
-                fontWeight: '500',
-                color: '#707070',
+                fontWeight: '600',
+                color: '#a1a1aa',
                 background: 'none',
-                border: '1px solid #2a2a2a',
-                padding: '5px 12px',
-                borderRadius: '6px',
+                border: '1px solid #303036',
+                padding: '8px 12px',
+                borderRadius: '9px',
                 cursor: 'pointer',
               }}>Logout</button>
             </>
           ) : (
             <>
-              <Link href="/login" style={{
-                fontSize: '13px',
-                fontWeight: '500',
-                color: '#52525b',
-                textDecoration: 'none',
-                padding: '5px 12px',
-              }}>Login</Link>
+              <Link href="/login" className="site-nav__login">Login</Link>
               <Link href="/signup" style={{
                 fontSize: '13px',
                 fontWeight: '600',
                 color: '#fff',
                 textDecoration: 'none',
-                padding: '5px 14px',
-                borderRadius: '6px',
-                background: '#2563eb',
-              }}>Sign up</Link>
+                padding: '10px 16px',
+                borderRadius: '9px',
+                background: 'linear-gradient(135deg, #3b82f6, #4f46e5)',
+                boxShadow: '0 5px 16px rgba(59, 130, 246, 0.2)',
+              }}><span className="site-nav__signup-label">Get started</span><span className="site-nav__signup-mobile">Sign up</span> <span aria-hidden="true">→</span></Link>
             </>
+          )}
+          {showLoggedIn && (
+            <button
+              className="site-nav__menu-toggle"
+              type="button"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen(!menuOpen)}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '38px',
+                height: '38px',
+                color: '#e4e4e7',
+                background: '#18181b',
+                border: '1px solid #303036',
+                borderRadius: '9px',
+                cursor: 'pointer',
+                fontSize: '18px',
+              }}
+            >{menuOpen ? '×' : '☰'}</button>
           )}
         </div>
       </div>

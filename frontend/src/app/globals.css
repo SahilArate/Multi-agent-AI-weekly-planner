@@ -32,3 +32,114 @@ body {
 }
 
 .mono { font-family: 'DM Mono', monospace; }
+
+.site-nav__links {
+  display: flex;
+}
+
+.site-nav__links a:hover,
+.site-nav__login:hover {
+  color: #fafafa !important;
+}
+
+.site-nav__links a:not([aria-current='page']):hover {
+  background: rgba(63, 63, 70, 0.35) !important;
+}
+
+.site-nav__login {
+  color: #a1a1aa;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 9px 12px;
+  transition: color 150ms ease;
+}
+
+.site-nav__signup-mobile {
+  display: none;
+}
+
+.site-nav__menu-toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .site-nav__inner {
+    position: relative;
+    padding: 0 20px !important;
+    gap: 12px !important;
+  }
+
+  .site-nav__tagline {
+    display: none !important;
+  }
+
+  .site-nav__links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 16px;
+    right: 16px;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 4px !important;
+    padding: 8px !important;
+    background: rgba(17, 17, 19, 0.98) !important;
+    border: 1px solid #303036 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  }
+
+  .site-nav__links--open {
+    display: flex;
+  }
+
+  .site-nav__links a {
+    padding: 11px 12px !important;
+  }
+
+  .site-nav__menu-toggle {
+    display: flex !important;
+  }
+
+  .site-nav__user {
+    padding-right: 7px !important;
+  }
+
+  .site-nav__email {
+    max-width: 100px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-nav__inner {
+    padding: 0 16px !important;
+    min-height: 62px !important;
+  }
+
+  .site-nav__email {
+    display: none;
+  }
+
+  .site-nav__user {
+    background: transparent !important;
+    border-color: transparent !important;
+    padding: 0 !important;
+  }
+
+  .site-nav__actions {
+    gap: 7px !important;
+  }
+
+  .site-nav__login {
+    display: none;
+  }
+
+  .site-nav__signup-label {
+    display: none;
+  }
+
+  .site-nav__signup-mobile {
+    display: inline;
+  }
+}
