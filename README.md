@@ -287,6 +287,12 @@ This project uses Supabase for authentication and database. On the **free tier**
 - Visit your app at least once a week to keep Supabase active
 - Or upgrade to Supabase Pro to disable auto-pausing
 
+### Email verification and sign-in
+- Signup confirmation uses the email link/code configured in Supabase **Authentication → Email Templates**; the app's current confirmation screen expects a link.
+- A successful signup response means Supabase accepted the account, not that the email reached the inbox. Check Supabase **Authentication → SMTP Settings** and the project's email logs; configure a custom SMTP provider for reliable delivery.
+- For deployed apps, set `NEXT_PUBLIC_API_URL` in the frontend hosting settings to the deployed FastAPI service, and verify that `<backend-url>/health` responds successfully. A 404 usually means the configured URL is not serving this backend.
+- A user in a custom profile/table is not necessarily a Supabase Auth user. Password login requires the account to exist under **Authentication → Users** in the same project and use the password set for that Auth account.
+
 ## 📊 Database Schema
 
 ```sql

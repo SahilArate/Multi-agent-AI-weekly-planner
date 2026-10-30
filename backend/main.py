@@ -12,7 +12,7 @@ from api.chat import router as chat_router
 import uvicorn
 
 load_dotenv()
-print("GROQ KEY LOADED:", os.getenv("GROQ_API_KEY"))
+logger.info("Groq API key configured: {}", bool(os.getenv("GROQ_API_KEY")))
 
 app = FastAPI(
     title="AI Weekly Planner",
