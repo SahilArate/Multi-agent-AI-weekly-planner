@@ -8,6 +8,7 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -31,7 +32,18 @@ export default function SignupPage() {
   const isPasswordValid = Object.values(passwordChecks).every(Boolean)
 
   const handleSignup = async () => {
-    if (!email || !password || !fullName) return
+    if (!email || !password || !fullName) {
+      setError('Please fill in all fields')
+      return
+    }
+    if (!confirmPassword) {
+      setError('Please confirm your password')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
     if (!isPasswordValid) {
       setError('Please meet all password requirements below')
       return
@@ -73,27 +85,39 @@ export default function SignupPage() {
             fontWeight: '700',
             color: '#fafafa',
             marginBottom: '8px',
-          }}>Check your email!</h2>
+          }}>Signup request received</h2>
           <p style={{
             fontSize: '13px',
             color: '#52525b',
             lineHeight: '1.6',
-            marginBottom: '24px',
+            marginBottom: '16px',
           }}>
-            We sent a verification link to{' '}
-            <strong style={{ color: '#a1a1aa' }}>{email}</strong>.
-            Click it to activate your account.
+            We can&apos;t confirm whether a verification email was sent. If you
+            already have an account for{' '}
+            <strong style={{ color: '#a1a1aa' }}>{email}</strong>, sign in or
+            reset your password. If this is a new account and no email arrives,
+            check your spam folder.
           </p>
-          <Link href="/login" style={{
-            background: '#3b82f6',
-            color: '#fff',
-            fontSize: '13px',
-            fontWeight: '600',
-            padding: '10px 24px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            display: 'inline-block',
-          }}>Go to login →</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            <Link href="/login" style={{
+              background: '#3b82f6',
+              color: '#fff',
+              fontSize: '13px',
+              fontWeight: '600',
+              padding: '10px 24px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              display: 'inline-block',
+            }}>Go to login →</Link>
+            <Link href="/forgot-password" style={{
+              color: '#3b82f6',
+              fontSize: '13px',
+              fontWeight: '500',
+              padding: '10px 0',
+              textDecoration: 'none',
+              display: 'inline-block',
+            }}>Reset password</Link>
+          </div>
         </div>
       </div>
     )
@@ -266,6 +290,31 @@ export default function SignupPage() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              fontSize: '12px', fontWeight: '500',
+              color: '#a1a1aa', display: 'block', marginBottom: '6px',
+            }}>Confirm password</label>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={e => {
+                setConfirmPassword(e.target.value)
+                setError('')
+              }}
+              placeholder="Re-enter your password"
+              autoComplete="new-password"
+              onKeyDown={e => e.key === 'Enter' && handleSignup()}
+              style={{
+                width: '100%', background: '#0a0a0a',
+                border: '1px solid #222222', borderRadius: '8px',
+                padding: '10px 12px', fontSize: '13px',
+                color: '#fafafa', outline: 'none',
+                fontFamily: 'DM Sans, sans-serif',
+              }}
+            />
           </div>
 
           <button
