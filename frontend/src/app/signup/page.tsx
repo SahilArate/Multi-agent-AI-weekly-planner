@@ -10,6 +10,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
@@ -297,24 +298,37 @@ export default function SignupPage() {
               fontSize: '12px', fontWeight: '500',
               color: '#a1a1aa', display: 'block', marginBottom: '6px',
             }}>Confirm password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={e => {
-                setConfirmPassword(e.target.value)
-                setError('')
-              }}
-              placeholder="Re-enter your password"
-              autoComplete="new-password"
-              onKeyDown={e => e.key === 'Enter' && handleSignup()}
-              style={{
-                width: '100%', background: '#0a0a0a',
-                border: '1px solid #222222', borderRadius: '8px',
-                padding: '10px 12px', fontSize: '13px',
-                color: '#fafafa', outline: 'none',
-                fontFamily: 'DM Sans, sans-serif',
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => {
+                  setConfirmPassword(e.target.value)
+                  setError('')
+                }}
+                placeholder="Re-enter your password"
+                autoComplete="new-password"
+                onKeyDown={e => e.key === 'Enter' && handleSignup()}
+                style={{
+                  width: '100%', background: '#0a0a0a',
+                  border: '1px solid #222222', borderRadius: '8px',
+                  padding: '10px 40px 10px 12px', fontSize: '13px',
+                  color: '#fafafa', outline: 'none',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{
+                  position: 'absolute', right: '12px',
+                  top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', fontSize: '14px',
+                  color: '#52525b', padding: '0',
+                }}
+              >{showConfirmPassword ? '🙈' : '👁'}</button>
+            </div>
           </div>
 
           <button
