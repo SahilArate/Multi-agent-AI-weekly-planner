@@ -138,6 +138,16 @@ body {
   .site-nav__signup-label {
     display: none;
   }
+}
+
+@media (max-width: 720px) {
+  .analytics-page .analytics-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .analytics-page .analytics-chart-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
 
   .site-nav__signup-mobile {
     display: inline;
