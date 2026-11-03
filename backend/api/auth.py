@@ -98,7 +98,11 @@ async def logout():
 async def forgot_password(request: ForgotPasswordRequest):
     check_supabase()
     try:
-        supabase.auth.reset_password_email(request.email)
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+        supabase.auth.reset_password_email(
+            request.email,
+            {"redirect_to": f"{frontend_url}/reset-password"},
+        )
         return {"status": "success", "message": "Password reset email sent."}
     except Exception as e:
         logger.error(f"Forgot password failed: {e}")
