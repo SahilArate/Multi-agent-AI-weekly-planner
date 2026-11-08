@@ -55,6 +55,14 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 | 🔐 **Auth** | Supabase email auth with JWT, email verification, saved plans per user |
 | 🚀 **Deployed** | Frontend on Vercel, Backend on Railway, DB on Supabase |
 
+### Current implementation details
+
+- The planning page accepts goals, existing commitments, energy preferences, and a plan duration (the input allows 1–52 weeks). The generated events are a single weekly schedule; duration controls how long a saved plan is considered active.
+- Today's task completion is saved in browser `localStorage`; it is not synchronized to the database.
+- Plan chat uses the latest saved plan as context and can suggest changes, but does not update or save plan events.
+- The WebSocket streams per-agent status and results, not token-by-token model output.
+- Redis and pgvector appear in the dependencies/compose setup, but Redis caching or rate limiting and vector embedding/RAG behavior are not currently implemented in the application.
+
 ---
 
 ## 🏗️ Architecture
@@ -79,6 +87,27 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 └──────────────┘ └──────────────┘ └────────────────────────┘
 ```
 
+The REST and WebSocket planning routes currently invoke the five agent functions directly in sequence. A LangGraph `StateGraph` implementation is present in `backend/agents/orchestrator.py`, but those API routes do not currently use it.
+
+### Backend API reference
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | Basic backend status |
+| `GET` | `/health` | Health check |
+| `POST` | `/api/goals/parse` | Parse goal text into structured goals |
+| `POST` | `/api/plan/generate` | Generate a plan and return JSON |
+| `WS` | `/api/ws/plan` | Generate a plan and stream per-agent progress/results |
+| `POST` | `/api/plan/save` | Save a plan for the authenticated user |
+| `GET` | `/api/plans/me` | List the authenticated user's saved plans |
+| `POST` | `/api/chat` | Chat using supplied plan context |
+| `POST` | `/api/auth/signup`, `/api/auth/login` | Create an account or sign in |
+| `POST` | `/api/auth/logout` | Backend logout route |
+| `POST` | `/api/auth/forgot-password` | Request a password-reset email |
+| `POST` | `/api/auth/reset-password` | Backend password-reset route |
+
+Interactive API documentation is available at `http://localhost:8000/docs` while the backend is running. The frontend reset-password page updates the password through the Supabase client.
+
 ---
 
 ## 🤖 The 5 Agents
@@ -92,6 +121,8 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 ```
 
 All agents are connected via **LangGraph StateGraph** — each agent's output becomes the next agent's input, forming an autonomous planning pipeline.
+
+In the currently exposed planning endpoints, the agents are called sequentially: goals are parsed, commitments are analyzed for free slots, energy preferences are summarized, the plan is checked for balance, and the Planner produces the final schedule. The Balance Agent's prompt asks for no more than 10 work/study hours per day, at least an hour of health activity per week, and at least one rest or light day; it also reports days with more than 12 scheduled hours.
 
 ---
 
@@ -127,6 +158,8 @@ All agents are connected via **LangGraph StateGraph** — each agent's output be
 | Supabase | Managed PostgreSQL database |
 | GitHub Actions | CI/CD pipeline |
 
+The model configured in the agent and chat code is Groq `openai/gpt-oss-120b`. Although Redis and pgvector packages are listed in the backend dependencies, the current application code does not use them for caching, rate limiting, embeddings, or RAG.
+
 ---
 
 ## 🚀 Getting Started
@@ -135,6 +168,10 @@ All agents are connected via **LangGraph StateGraph** — each agent's output be
 - Node.js 18+
 - Python 3.11+
 - Git
+- A [Groq API key](https://console.groq.com/)
+- A [Supabase project](https://supabase.com/)
+
+For signup, login, plan persistence, and planning requests, configure the backend and frontend environment files before starting the app. A Groq API key is required for AI planning and chat.
 
 ### 1. Clone the repo
 ```bash
@@ -185,11 +222,15 @@ npm run dev
 
 Frontend runs at: `http://localhost:3000`
 
+Run the backend and frontend in separate terminals. On Windows PowerShell, copy the example files with `Copy-Item .env.example .env` (from `backend`) and `Copy-Item .env.example .env.local` (from `frontend`).
+
 ### 4. Or run with Docker
+Create and fill in `backend/.env` and `frontend/.env.local` before starting Compose; both are loaded by the Compose configuration.
 ```bash
 # From repo root
 docker-compose up --build
 ```
+The app is available at `http://localhost:3000`; the backend is at `http://localhost:8000`. Compose also starts Redis at `localhost:6379`, though the application does not currently use it.
 
 ---
 
@@ -213,6 +254,8 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+`NEXT_PUBLIC_API_URL` should be the backend origin (for example, `https://your-service.up.railway.app`). The Supabase URL and anon key are used by the frontend's password-recovery flow. Keep `SUPABASE_SERVICE_KEY` on the backend only; never expose it through a `NEXT_PUBLIC_` variable.
 
 ---
 
@@ -263,10 +306,29 @@ Multi-agent-AI-weekly-planner/
 └── README.md
 ```
 
+The current frontend also includes `forgot-password/` and `reset-password/` pages. The backend includes `Dockerfile` and `runtime.txt`; the frontend includes a `Dockerfile`; and `test_ws.py` is a manual WebSocket smoke-test script.
+
 ---
 
 
 ## Deployment
+
+### Deployment setup
+
+1. Create a Supabase project and configure email/password authentication.
+2. Deploy the `backend` directory to Railway (or another Python host) with `GROQ_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and `FRONTEND_URL`. The app uses the hosting platform's `PORT` when available and otherwise defaults to `8000`. Check `<backend-url>/health` after deployment.
+3. Deploy the `frontend` directory to Vercel and set `NEXT_PUBLIC_API_URL` to the backend origin, along with `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. The backend CORS allow-list currently includes localhost and the project's Vercel URL. Add a custom frontend domain to `backend/main.py`'s allowed origins when using one.
+5. In Supabase Authentication → URL Configuration, set the site URL to your frontend origin and add `<frontend-origin>/reset-password` to the allowed redirect URLs. Configure the verification and recovery email templates as needed.
+
+The root Docker Compose configuration and both service Dockerfiles are provided for local development.
+
+### Local checks
+
+- Frontend production build: `cd frontend` then `npm run build`
+- Frontend lint: `cd frontend` then `npm run lint`
+- Backend WebSocket smoke test: start the backend with credentials configured, then run `python test_ws.py` from the repository root
+- The repository currently has a manual WebSocket smoke-test script; no automated test suite or GitHub Actions workflow is defined.
 
 ## ⚠️ Important: Supabase Free Tier
 
@@ -307,6 +369,26 @@ plans (
 )
 ```
 
+The backend saves and reads plans from `public.plans`. To create the table in a new Supabase project, run this SQL in the Supabase SQL Editor:
+
+```sql
+create table if not exists public.plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  goals text not null,
+  commitments text not null,
+  preferences text not null,
+  week_start date not null,
+  events jsonb not null default '[]'::jsonb,
+  week_summary text not null,
+  total_hours numeric not null default 0,
+  duration_weeks integer not null default 1,
+  created_at timestamptz not null default now()
+);
+```
+
+The current app does not require a separate `profiles` table. Keep the Supabase service-role key exclusively on the backend.
+
 ---
 
 ## 🎯 Resume Highlights
@@ -318,6 +400,8 @@ plans (
 - **RAG pipeline** — pgvector embeddings for habit memory
 - **Production deployment** — Vercel + Railway + Supabase + Docker
 - **Full-stack ownership** — Frontend, backend, database, auth, CI/CD
+
+The project also provides a manual WebSocket smoke-test script (`test_ws.py`). Task completion is browser-local, and plan chat suggests changes without modifying saved events; see the implementation notes above for additional current behavior and limitations.
 
 ---
 
