@@ -340,7 +340,7 @@ export default function ChatPage() {
               padding: '5px 12px',
               borderRadius: '100px',
               cursor: 'pointer',
-              transition: 'all 0.15s',
+              transition: 'all 0.10s',
               whiteSpace: 'nowrap',
             }}
             onMouseEnter={e => {
@@ -403,7 +403,7 @@ export default function ChatPage() {
               borderRadius: '8px',
               cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
               flexShrink: 0,
-              transition: 'background 0.15s',
+              transition: 'background 0.10s',
             }}
           >Send →</button>
         </div>

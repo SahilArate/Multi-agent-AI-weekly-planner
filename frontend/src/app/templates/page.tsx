@@ -165,7 +165,7 @@ export default function TemplatesPage() {
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              transition: 'border-color 0.15s',
+              transition: 'border-color 0.10s',
             }}
             onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#333333'}
             onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#1a1a1a'}
@@ -244,7 +244,7 @@ export default function TemplatesPage() {
                     padding: '9px',
                     borderRadius: '8px',
                     cursor: 'pointer',
-                    transition: 'background 0.15s',
+                    transition: 'background 0.10s',
                   }}
                   onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = t.color}
                   onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = '#1a1a1a'}

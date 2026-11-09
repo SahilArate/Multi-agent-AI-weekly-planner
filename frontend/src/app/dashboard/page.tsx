@@ -362,7 +362,7 @@ useEffect(() => {
               <div key={plan.id} style={{
                 background: '#111111', border: '1px solid #1a1a1a',
                 borderRadius: '12px', padding: '20px', cursor: 'pointer',
-                transition: 'border-color 0.15s',
+                transition: 'border-color 0.10s',
               }}
               onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#333333'}
               onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = '#1a1a1a'}

@@ -121,7 +121,7 @@ export default function Home() {
           }}>
             {[
               { num: '5', label: 'AI agents' },
-              { num: '<15s', label: 'to plan your week' },
+              { num: '<10s', label: 'to plan your week' },
               { num: '100%', label: 'free to use' },
             ].map((stat, i) => (
               <div key={stat.label} style={{ display: 'flex', alignItems: 'center' }}>
