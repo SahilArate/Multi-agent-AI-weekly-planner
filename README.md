@@ -62,6 +62,7 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 - Plan chat uses the latest saved plan as context and can suggest changes, but does not update or save plan events.
 - The WebSocket streams per-agent status and results, not token-by-token model output.
 - Redis and pgvector appear in the dependencies/compose setup, but Redis caching or rate limiting and vector embedding/RAG behavior are not currently implemented in the application.
+- **RAG personalization is in progress**; embedding-backed memory and retrieval are not yet available in the app.
 
 ---
 
