@@ -130,37 +130,23 @@ export default function Navbar() {
         }}>
           {showLoggedIn ? (
             <>
-              <div className="site-nav__user" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(24, 24, 27, 0.8)',
-                border: '1px solid #303036',
-                borderRadius: '10px',
-                padding: '5px 11px 5px 7px',
-              }}>
-                <div style={{
-                  width: '22px', height: '22px',
+              <div
+                aria-label="User profile"
+                title="User profile"
+                style={{
+                  width: '34px',
+                  height: '34px',
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '10px',
+                  fontSize: '13px',
                   fontWeight: '700',
                   color: '#fff',
                   flexShrink: 0,
-                }}>
-                  {user.email?.charAt(0).toUpperCase()}
-                </div>
-                <span className="site-nav__email" style={{
-                  fontSize: '12px',
-                  color: '#b0b0b0',
-                  maxWidth: '130px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>{user.email}</span>
+              }}>
+                {user.email?.charAt(0).toUpperCase()}
               </div>
               <button onClick={handleLogout} style={{
                 fontSize: '12px',

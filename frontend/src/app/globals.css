@@ -101,30 +101,12 @@ body {
   .site-nav__menu-toggle {
     display: flex !important;
   }
-
-  .site-nav__user {
-    padding-right: 7px !important;
-  }
-
-  .site-nav__email {
-    max-width: 100px !important;
-  }
 }
 
 @media (max-width: 480px) {
   .site-nav__inner {
     padding: 0 16px !important;
     min-height: 62px !important;
-  }
-
-  .site-nav__email {
-    display: none;
-  }
-
-  .site-nav__user {
-    background: transparent !important;
-    border-color: transparent !important;
-    padding: 0 !important;
   }
 
   .site-nav__actions {
