@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useStore } from '@/lib/store'
 
@@ -10,6 +10,8 @@ export default function Navbar() {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Intentional one-time mount flag to avoid SSR/client hydration
@@ -21,6 +23,26 @@ export default function Navbar() {
   useEffect(() => {
     if (user) updateActivity()
   }, [user, pathname, updateActivity])
+
+  useEffect(() => {
+    if (!profileMenuOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !profileMenuRef.current?.contains(event.target)) {
+        setProfileMenuOpen(false)
+      }
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setProfileMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [profileMenuOpen])
 
   const showLoggedIn = mounted && !!user
   const handleLogout = () => {
@@ -130,34 +152,112 @@ export default function Navbar() {
         }}>
           {showLoggedIn ? (
             <>
-              <div
-                aria-label="User profile"
-                title="User profile"
-                style={{
-                  width: '34px',
-                  height: '34px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  color: '#fff',
-                  flexShrink: 0,
-              }}>
-                {user.email?.charAt(0).toUpperCase()}
+              <div ref={profileMenuRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  aria-label="Open profile menu"
+                  aria-haspopup="menu"
+                  aria-expanded={profileMenuOpen}
+                  aria-controls="profile-menu"
+                  onClick={() => setProfileMenuOpen(open => !open)}
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    padding: 0,
+                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                  }}
+                >
+                  {user.email?.charAt(0).toUpperCase()}
+                </button>
+                {profileMenuOpen && (
+                  <div
+                    id="profile-menu"
+                    role="menu"
+                    aria-label="Profile menu"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 10px)',
+                      right: 0,
+                      width: '220px',
+                      padding: '8px',
+                      border: '1px solid #303036',
+                      borderRadius: '12px',
+                      background: '#18181b',
+                      boxShadow: '0 12px 32px rgba(0, 0, 0, 0.4)',
+                      zIndex: 60,
+                    }}
+                  >
+                    <div
+                      title={user.email}
+                      style={{
+                        padding: '10px 12px',
+                        color: '#a1a1aa',
+                        fontSize: '12px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {user.email}
+                    </div>
+                    <div style={{ height: '1px', background: '#303036', margin: '4px 0' }} />
+                    {['View Profile', 'Settings'].map(label => (
+                      <button
+                        key={label}
+                        type="button"
+                        role="menuitem"
+                        disabled
+                        title={`${label} is not available yet`}
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          border: 0,
+                          borderRadius: '8px',
+                          background: 'transparent',
+                          color: '#71717a',
+                          fontSize: '13px',
+                          textAlign: 'left',
+                          cursor: 'not-allowed',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                    <div style={{ height: '1px', background: '#303036', margin: '4px 0' }} />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileMenuOpen(false)
+                        handleLogout()
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: 0,
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        color: '#f87171',
+                        fontSize: '13px',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
-              <button onClick={handleLogout} style={{
-                fontSize: '12px',
-                fontWeight: '600',
-                color: '#a1a1aa',
-                background: 'none',
-                border: '1px solid #303036',
-                padding: '8px 12px',
-                borderRadius: '9px',
-                cursor: 'pointer',
-              }}>Logout</button>
             </>
           ) : (
             <>
