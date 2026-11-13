@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { getMyProfile } from '@/lib/api'
 import { useStore } from '@/lib/store'
 
 export default function Navbar() {
@@ -11,6 +12,7 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -23,6 +25,33 @@ export default function Navbar() {
   useEffect(() => {
     if (user) updateActivity()
   }, [user, pathname, updateActivity])
+
+  useEffect(() => {
+    if (!user) {
+      setAvatarUrl(null)
+      return
+    }
+
+    let active = true
+    const handleProfileUpdate = (event: Event) => {
+      const update = event as CustomEvent<{ avatarUrl: string | null }>
+      setAvatarUrl(update.detail.avatarUrl)
+    }
+
+    window.addEventListener('weeklyai-profile-updated', handleProfileUpdate)
+    getMyProfile()
+      .then(profile => {
+        if (active) setAvatarUrl(profile.avatar_url)
+      })
+      .catch(error => {
+        console.error('Unable to load the profile picture for navigation:', error)
+      })
+
+    return () => {
+      active = false
+      window.removeEventListener('weeklyai-profile-updated', handleProfileUpdate)
+    }
+  }, [user?.id])
 
   useEffect(() => {
     if (!profileMenuOpen) return
@@ -166,7 +195,9 @@ export default function Navbar() {
                     borderRadius: '50%',
                     border: 'none',
                     padding: 0,
-                    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                    background: avatarUrl
+                      ? `center / cover no-repeat url("${avatarUrl}")`
+                      : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -177,7 +208,7 @@ export default function Navbar() {
                     flexShrink: 0,
                   }}
                 >
-                  {user.email?.charAt(0).toUpperCase()}
+                  {!avatarUrl && user.email?.charAt(0).toUpperCase()}
                 </button>
                 {profileMenuOpen && (
                   <div
@@ -211,28 +242,41 @@ export default function Navbar() {
                       {user.email}
                     </div>
                     <div style={{ height: '1px', background: '#303036', margin: '4px 0' }} />
-                    {['View Profile', 'Settings'].map(label => (
-                      <button
-                        key={label}
-                        type="button"
-                        role="menuitem"
-                        disabled
-                        title={`${label} is not available yet`}
-                        style={{
-                          width: '100%',
-                          padding: '10px 12px',
-                          border: 0,
-                          borderRadius: '8px',
-                          background: 'transparent',
-                          color: '#71717a',
-                          fontSize: '13px',
-                          textAlign: 'left',
-                          cursor: 'not-allowed',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                    <Link
+                      href="/profile"
+                      role="menuitem"
+                      onClick={() => setProfileMenuOpen(false)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '8px',
+                        color: '#e4e4e7',
+                        fontSize: '13px',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      View Profile
+                    </Link>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled
+                      title="Settings is not available yet"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: 0,
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        color: '#71717a',
+                        fontSize: '13px',
+                        textAlign: 'left',
+                        cursor: 'not-allowed',
+                      }}
+                    >
+                      Settings
+                    </button>
                     <div style={{ height: '1px', background: '#303036', margin: '4px 0' }} />
                     <button
                       type="button"

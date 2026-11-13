@@ -53,6 +53,25 @@ export interface AgentMessage {
   data?: Record<string, unknown>
 }
 
+export interface UserProfile {
+  id: string
+  email: string
+  full_name: string
+  phone: string
+  location: string
+  website: string
+  timezone: string
+  bio: string
+  avatar_url: string | null
+  account_created_at: string
+  email_verified: boolean
+}
+
+export type UserProfileUpdate = Pick<
+  UserProfile,
+  'full_name' | 'phone' | 'location' | 'website' | 'timezone' | 'bio'
+>
+
 // ── API calls ────────────────────────────────────────
 export const generatePlan = async (
   goals: string,
@@ -83,6 +102,29 @@ export const savePlan = async (payload: {
 export const getUserPlans = async () => {
   const res = await api.get('/api/plans/me')
   return res.data
+}
+
+export const getMyProfile = async (): Promise<UserProfile> => {
+  const res = await api.get<UserProfile>('/api/profile')
+  return res.data
+}
+
+export const updateMyProfile = async (profile: UserProfileUpdate): Promise<UserProfile> => {
+  const res = await api.put<UserProfile>('/api/profile', profile)
+  return res.data
+}
+
+export const uploadProfileAvatar = async (file: File): Promise<{ avatar_url: string }> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  const res = await api.post<{ avatar_url: string }>('/api/profile/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return res.data
+}
+
+export const deleteProfileAvatar = async (): Promise<void> => {
+  await api.delete('/api/profile/avatar')
 }
 
 export const signup = async (

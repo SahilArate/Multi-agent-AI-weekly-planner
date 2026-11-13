@@ -53,6 +53,7 @@ WeeklyAI is a **production-grade full-stack AI SaaS** where **5 specialized AI a
 | 💬 **AI Chat** | Chat with your plan — ask questions or request changes |
 | 📋 **Templates** | 8 pre-built goal templates (Interview Prep, Deep Work, Fitness, etc.) |
 | 🔐 **Auth** | Supabase email auth with JWT, email verification, saved plans per user |
+| 👤 **Profile** | Edit personal details and upload or remove a profile picture |
 | 🚀 **Deployed** | Frontend on Vercel, Backend on Railway, DB on Supabase |
 
 ### Current implementation details
@@ -106,6 +107,8 @@ The REST and WebSocket planning routes currently invoke the five agent functions
 | `POST` | `/api/auth/logout` | Backend logout route |
 | `POST` | `/api/auth/forgot-password` | Request a password-reset email |
 | `POST` | `/api/auth/reset-password` | Backend password-reset route |
+| `GET`, `PUT` | `/api/profile` | Read or update the signed-in user's profile |
+| `POST`, `DELETE` | `/api/profile/avatar` | Upload or remove the signed-in user's profile picture |
 
 Interactive API documentation is available at `http://localhost:8000/docs` while the backend is running. The frontend reset-password page updates the password through the Supabase client.
 
@@ -275,7 +278,10 @@ Multi-agent-AI-weekly-planner/
 │   ├── api/
 │   │   ├── plan.py              ← Planning + WebSocket routes
 │   │   ├── auth.py              ← Auth routes
+│   │   ├── profile.py           ← Profile details and avatar routes
 │   │   └── chat.py              ← AI chat route
+│   ├── sql/
+│   │   └── profile_setup.sql    ← Profiles table and avatar bucket setup
 │   ├── utils/
 │   │   └── supabase_client.py   ← DB client
 │   ├── main.py                  ← FastAPI entry point
@@ -287,6 +293,7 @@ Multi-agent-AI-weekly-planner/
 │   │   ├── app/
 │   │   │   ├── page.tsx         ← Landing page
 │   │   │   ├── plan/            ← Plan generator
+│   │   │   ├── profile/         ← User profile and picture
 │   │   │   ├── today/           ← Today's focus + Pomodoro
 │   │   │   ├── templates/       ← Plan templates
 │   │   │   ├── analytics/       ← Analytics dashboard
@@ -357,6 +364,8 @@ This project uses Supabase for authentication and database. On the **free tier**
 - A user in a custom profile/table is not necessarily a Supabase Auth user. Password login requires the account to exist under **Authentication → Users** in the same project and use the password set for that Auth account.
 
 ## 📊 Database Schema
+
+The profile page requires a `profiles` table and a public Supabase Storage bucket for avatar images. Run [`backend/sql/profile_setup.sql`](backend/sql/profile_setup.sql) in the Supabase SQL Editor before using the profile page or uploading a picture. The script creates the profile fields and owner-scoped row policies; profile pictures are public-read images, while uploads and deletion are handled by the authenticated backend.
 
 ```sql
 -- User profiles (extends Supabase auth)

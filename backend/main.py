@@ -9,6 +9,7 @@ from loguru import logger
 from api.plan import router as plan_router
 from api.auth import router as auth_router
 from api.chat import router as chat_router
+from api.profile import router as profile_router
 import uvicorn
 
 load_dotenv()
@@ -34,6 +35,7 @@ app.add_middleware(
 app.include_router(plan_router)
 app.include_router(auth_router)
 app.include_router(chat_router)
+app.include_router(profile_router)
 
 @app.get("/")
 async def root():
