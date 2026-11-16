@@ -258,25 +258,22 @@ export default function Navbar() {
                     >
                       View Profile
                     </Link>
-                    <button
-                      type="button"
+                    <Link
+                      href="/settings"
                       role="menuitem"
-                      disabled
-                      title="Settings is not available yet"
+                      onClick={() => setProfileMenuOpen(false)}
                       style={{
+                        display: 'block',
                         width: '100%',
                         padding: '10px 12px',
-                        border: 0,
                         borderRadius: '8px',
-                        background: 'transparent',
-                        color: '#71717a',
+                        color: '#e4e4e7',
                         fontSize: '13px',
-                        textAlign: 'left',
-                        cursor: 'not-allowed',
+                        textDecoration: 'none',
                       }}
                     >
                       Settings
-                    </button>
+                    </Link>
                     <div style={{ height: '1px', background: '#303036', margin: '4px 0' }} />
                     <button
                       type="button"
