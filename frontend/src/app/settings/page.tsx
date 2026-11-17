@@ -14,6 +14,7 @@ type PlannerSettings = {
 type Notice = { type: 'success' | 'error'; text: string }
 
 const STORAGE_KEY = 'weeklyai-settings'
+const THEME_STORAGE_KEY = 'weeklyai-theme'
 
 const defaultSettings: PlannerSettings = {
   defaultView: 'week',
@@ -54,12 +55,23 @@ export default function SettingsPage() {
   const { user } = useStore()
   const router = useRouter()
   const [settings, setSettings] = useState<PlannerSettings>(defaultSettings)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [notice, setNotice] = useState<Notice | null>(null)
 
   useEffect(() => {
     if (!user) {
       router.push('/login')
       return
+    }
+
+    try {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+      const activeTheme = savedTheme === 'light' ? 'light' : 'dark'
+      setTheme(activeTheme)
+      document.documentElement.dataset.theme = activeTheme
+    } catch (error) {
+      console.error('Unable to load the saved theme:', error)
+      setNotice({ type: 'error', text: 'Unable to load your saved theme preference.' })
     }
 
     try {
@@ -102,6 +114,19 @@ export default function SettingsPage() {
     }
   }
 
+  const handleThemeChange = (nextTheme: 'dark' | 'light') => {
+    setTheme(nextTheme)
+    document.documentElement.dataset.theme = nextTheme
+    setNotice(null)
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+      setNotice({ type: 'success', text: `The ${nextTheme} theme is now active and saved on this device.` })
+    } catch (error) {
+      console.error('Unable to save the theme preference:', error)
+      setNotice({ type: 'error', text: 'The theme has changed, but your preference could not be saved.' })
+    }
+  }
+
   return (
     <main style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       <Navbar />
@@ -139,6 +164,31 @@ export default function SettingsPage() {
             {notice.text}
           </div>
         )}
+
+        <section style={{ ...cardStyle, marginBottom: '18px' }} aria-labelledby="appearance-heading">
+          <div style={{ marginBottom: '16px' }}>
+            <h2 id="appearance-heading" style={{ color: '#fafafa', fontSize: '15px', margin: '0 0 6px' }}>
+              Appearance
+            </h2>
+            <p style={{ color: '#71717a', fontSize: '12px', margin: 0 }}>
+              Choose the theme you want to use throughout the app.
+            </p>
+          </div>
+          <label style={{ display: 'grid', gap: '8px', color: '#e4e4e7', fontSize: '13px' }}>
+            Theme
+            <select
+              value={theme}
+              onChange={event => handleThemeChange(event.target.value as 'dark' | 'light')}
+              style={selectStyle}
+            >
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+            <span style={{ color: '#71717a', fontSize: '11px' }}>
+              Your choice takes effect immediately and is saved on this device.
+            </span>
+          </label>
+        </section>
 
         <form onSubmit={handleSave}>
           <section style={cardStyle} aria-labelledby="planner-preferences-heading">
