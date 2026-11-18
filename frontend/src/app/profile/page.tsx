@@ -272,11 +272,8 @@ export default function ProfilePage() {
               </div>
               <div style={{ flex: '1 1 220px' }}>
                 <h2 style={{ color: '#fafafa', fontSize: '16px', margin: '0 0 5px' }}>
-                  Profile picture
+                  {profile.full_name || profile.email}
                 </h2>
-                <p style={{ color: '#71717a', fontSize: '12px', margin: '0 0 14px' }}>
-                  JPEG, PNG, or WebP. Maximum file size: 5 MB.
-                </p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '9px' }}>
                   <label style={{
                     display: 'inline-flex',
@@ -325,6 +322,9 @@ export default function ProfilePage() {
                     </button>
                   )}
                 </div>
+                <p style={{ color: '#71717a', fontSize: '12px', margin: '10px 0 0' }}>
+                  JPEG, PNG, or WebP. Maximum file size: 5 MB.
+                </p>
               </div>
             </section>
 
