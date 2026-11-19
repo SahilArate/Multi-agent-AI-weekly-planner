@@ -281,7 +281,8 @@ Multi-agent-AI-weekly-planner/
 │   │   ├── profile.py           ← Profile details and avatar routes
 │   │   └── chat.py              ← AI chat route
 │   ├── sql/
-│   │   └── profile_setup.sql    ← Profiles table and avatar bucket setup
+│   │   ├── profile_setup.sql    ← Profiles table and avatar bucket setup
+│   │   └── profile_avatar_migration.sql ← Add avatar URL to existing profiles
 │   ├── utils/
 │   │   └── supabase_client.py   ← DB client
 │   ├── main.py                  ← FastAPI entry point
@@ -365,7 +366,7 @@ This project uses Supabase for authentication and database. On the **free tier**
 
 ## 📊 Database Schema
 
-The profile page requires a `profiles` table and a public Supabase Storage bucket for avatar images. Run [`backend/sql/profile_setup.sql`](backend/sql/profile_setup.sql) in the Supabase SQL Editor before using the profile page or uploading a picture. The script creates the profile fields and owner-scoped row policies; profile pictures are public-read images, while uploads and deletion are handled by the authenticated backend.
+The profile page requires a `profiles` table with an `avatar_url` column and a public Supabase Storage bucket for avatar images. Run [`backend/sql/profile_setup.sql`](backend/sql/profile_setup.sql) in the Supabase SQL Editor for a new setup. If the `profiles` table already exists, run [`backend/sql/profile_avatar_migration.sql`](backend/sql/profile_avatar_migration.sql) to add the missing column and reload the PostgREST schema cache. Profile pictures are public-read images, while uploads and deletion are handled by the authenticated backend.
 
 ```sql
 -- User profiles (extends Supabase auth)
