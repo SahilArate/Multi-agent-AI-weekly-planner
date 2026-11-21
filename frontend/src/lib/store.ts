@@ -28,6 +28,7 @@ const getSavedUser = (): User | null => {
   try {
     const lastActive = localStorage.getItem('lastActive')
     if (lastActive && Date.now() - Number(lastActive) > INACTIVITY_LIMIT_MS) {
+      sessionStorage.setItem('sessionExpired', '1')
       localStorage.removeItem('user')
       localStorage.removeItem('token')
       localStorage.removeItem('lastActive')

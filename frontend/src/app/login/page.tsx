@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { login } from '@/lib/api'
@@ -11,8 +11,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [sessionExpired, setSessionExpired] = useState(false)
   const { setUser } = useStore()
   const router = useRouter()
+
+  useEffect(() => {
+    const expired = sessionStorage.getItem('sessionExpired')
+    if (expired) {
+      sessionStorage.removeItem('sessionExpired')
+      setSessionExpired(true)
+    }
+  }, [])
 
   const handleLogin = async () => {
     if (!email || !password) return
@@ -38,6 +47,76 @@ export default function LoginPage() {
       justifyContent: 'center',
       padding: '24px',
     }}>
+      {sessionExpired && (
+        <div
+          onClick={() => setSessionExpired(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '24px',
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="session-expired-title"
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '360px',
+              background: '#111111',
+              border: '1px solid #1a1a1a',
+              borderRadius: '14px',
+              padding: '24px',
+              textAlign: 'center',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.45)',
+            }}
+          >
+            <h2
+              id="session-expired-title"
+              style={{
+                fontSize: '16px',
+                fontWeight: '700',
+                color: '#fafafa',
+                margin: '0 0 8px',
+                letterSpacing: '-0.3px',
+              }}
+            >
+              Session expired
+            </h2>
+            <p style={{
+              fontSize: '13px',
+              color: '#a1a1aa',
+              margin: '0 0 18px',
+              lineHeight: 1.5,
+            }}>
+              Your login session has expired. Please login again.
+            </p>
+            <button
+              type="button"
+              onClick={() => setSessionExpired(false)}
+              style={{
+                width: '100%',
+                background: '#3b82f6',
+                color: '#fff',
+                fontSize: '13px',
+                fontWeight: '600',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <div style={{ width: '100%', maxWidth: '380px' }}>
 
         <div style={{

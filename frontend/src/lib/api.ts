@@ -24,11 +24,20 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      localStorage.removeItem('lastActive')
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
+      const requestUrl = error.config?.url || ''
+      const isAuthRequest = requestUrl.includes('/api/auth/login')
+        || requestUrl.includes('/api/auth/signup')
+        || requestUrl.includes('/api/auth/forgot-password')
+        || requestUrl.includes('/api/auth/reset-password')
+
+      if (!isAuthRequest) {
+        sessionStorage.setItem('sessionExpired', '1')
+        localStorage.removeItem('user')
+        localStorage.removeItem('token')
+        localStorage.removeItem('lastActive')
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login'
+        }
       }
     }
     return Promise.reject(error)
