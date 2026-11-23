@@ -264,15 +264,6 @@ export default function LoginPage() {
             color: '#3b82f6', textDecoration: 'none', fontWeight: '500',
           }}>Sign up</Link>
         </p>
-
-        <p style={{
-          textAlign: 'center', fontSize: '13px',
-          color: '#333333', marginTop: '12px',
-        }}>
-          <Link href="/plan" style={{
-            color: '#333333', textDecoration: 'none',
-          }}>← Continue without account</Link>
-        </p>
       </div>
     </div>
   )
