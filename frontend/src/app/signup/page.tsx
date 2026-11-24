@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { signup } from '@/lib/api'
 
 export default function SignupPage() {
-  const [fullName, setFullName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -33,7 +34,7 @@ export default function SignupPage() {
   const isPasswordValid = Object.values(passwordChecks).every(Boolean)
 
   const handleSignup = async () => {
-    if (!email || !password || !fullName) {
+    if (!email || !password || !firstName.trim() || !lastName.trim()) {
       setError('Please fill in all fields')
       return
     }
@@ -52,6 +53,7 @@ export default function SignupPage() {
     setLoading(true)
     setError('')
     try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim()
       await signup(email, password, fullName)
       setSuccess(true)
     } catch (e: any) {
@@ -190,25 +192,52 @@ export default function SignupPage() {
             }}>{error}</div>
           )}
 
-          <div style={{ marginBottom: '12px' }}>
-            <label style={{
-              fontSize: '12px', fontWeight: '500',
-              color: '#a1a1aa', display: 'block', marginBottom: '6px',
-            }}>Full name</label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              placeholder="Enter your full name"
-              autoComplete="off"
-              style={{
-                width: '100%', background: '#0a0a0a',
-                border: '1px solid #222222', borderRadius: '8px',
-                padding: '10px 12px', fontSize: '13px',
-                color: '#fafafa', outline: 'none',
-                fontFamily: 'DM Sans, sans-serif',
-              }}
-            />
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: '12px',
+            marginBottom: '12px',
+          }}>
+            <div>
+              <label style={{
+                fontSize: '12px', fontWeight: '500',
+                color: '#a1a1aa', display: 'block', marginBottom: '6px',
+              }}>First name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                placeholder="First name"
+                autoComplete="given-name"
+                style={{
+                  width: '100%', background: '#0a0a0a',
+                  border: '1px solid #222222', borderRadius: '8px',
+                  padding: '10px 12px', fontSize: '13px',
+                  color: '#fafafa', outline: 'none',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              />
+            </div>
+            <div>
+              <label style={{
+                fontSize: '12px', fontWeight: '500',
+                color: '#a1a1aa', display: 'block', marginBottom: '6px',
+              }}>Last name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                placeholder="Last name"
+                autoComplete="family-name"
+                style={{
+                  width: '100%', background: '#0a0a0a',
+                  border: '1px solid #222222', borderRadius: '8px',
+                  padding: '10px 12px', fontSize: '13px',
+                  color: '#fafafa', outline: 'none',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              />
+            </div>
           </div>
 
           <div style={{ marginBottom: '12px' }}>
@@ -333,15 +362,15 @@ export default function SignupPage() {
 
           <button
             onClick={handleSignup}
-            disabled={loading || !email || !password || !fullName || !isPasswordValid}
+            disabled={loading || !email || !password || !firstName.trim() || !lastName.trim() || !isPasswordValid}
             style={{
               width: '100%',
-              background: loading || !email || !password || !fullName || !isPasswordValid ? '#1a1a1a' : '#3b82f6',
-              color: loading || !email || !password || !fullName || !isPasswordValid ? '#52525b' : '#fff',
+              background: loading || !email || !password || !firstName.trim() || !lastName.trim() || !isPasswordValid ? '#1a1a1a' : '#3b82f6',
+              color: loading || !email || !password || !firstName.trim() || !lastName.trim() || !isPasswordValid ? '#52525b' : '#fff',
               fontSize: '14px', fontWeight: '600',
               padding: '11px', borderRadius: '8px',
               border: 'none',
-              cursor: loading || !email || !password || !fullName || !isPasswordValid ? 'not-allowed' : 'pointer',
+              cursor: loading || !email || !password || !firstName.trim() || !lastName.trim() || !isPasswordValid ? 'not-allowed' : 'pointer',
               letterSpacing: '-0.2px',
             }}
           >
