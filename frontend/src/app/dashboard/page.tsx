@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useStore } from '@/lib/store'
-import { getUserPlans } from '@/lib/api'
+import { getMyProfile, getUserPlans } from '@/lib/api'
 
 interface PlanEvent {
   title: string
@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [profileName, setProfileName] = useState('')
 
 useEffect(() => {
     // Intentional one-time mount flag to avoid SSR/client hydration
@@ -60,6 +61,14 @@ useEffect(() => {
     // so this doesn't cause a synchronous cascading render
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPlans()
+    void getMyProfile()
+      .then(profile => {
+        const name = profile.full_name?.trim()
+        if (name) setProfileName(name)
+      })
+      .catch(error => {
+        console.error('Failed to load profile name for dashboard:', error)
+      })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -277,7 +286,7 @@ useEffect(() => {
               marginBottom: '4px',
             }}>Welcome back 👋</h1>
             <p style={{ fontSize: '13px', color: '#52525b' }}>
-              {mounted ? (user?.email || 'your account') : 'your account'}
+              {mounted ? (profileName || user?.email || 'your account') : 'your account'}
             </p>
           </div>
           <Link href="/plan" style={{
